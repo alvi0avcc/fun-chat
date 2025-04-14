@@ -1,0 +1,64 @@
+{
+  "name": "init-config-webpack",
+  "version": "1.0.0",
+  "description": "init-config-webpack",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "webpack --mode development",
+    "build": "webpack --mode production",
+    "start": "webpack serve",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "ci:format": "prettier --check src/**/*.ts",
+    "format:check": "prettier --check . --ignore-unknown",
+    "format:list": "prettier --list-different .",
+    "stylelint": "stylelint 'src/**/*.{css,scss}'",
+    "stylelint:fix": "stylelint 'src/**/*.{css,scss}' --fix",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "A.Vavilov",
+  "license": "ISC",
+  "homepage": "",
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
+    "css-loader": "^7.1.2",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "eslint-plugin-unicorn": "^57.0.0",
+    "eslint-webpack-plugin": "^5.0.0",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.6.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.5.3",
+    "style-loader": "^4.0.0",
+    "stylelint": "^16.15.0",
+    "stylelint-config-clean-order": "^7.0.0",
+    "stylelint-config-standard": "^37.0.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "src/**/*.{css,scss}": [
+      "stylelint --fix",
+      "prettier --write"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+
+{
+  "extends": [
+    "stylelint-config-standard",
+    "stylelint-config-clean-order"
+  ],
+  "rules": {
+    "selector-class-pattern": null,
+    "no-descending-specificity": null,
+    "no-empty-source": null,
+    "color-hex-length": "short"
+  }
+}
