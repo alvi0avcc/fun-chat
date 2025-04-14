@@ -41,10 +41,13 @@ export default {
       },
     ],
   },
-  plugins: [
+plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.html',
+      filename: 'index.html',
+      favicon: './src/assets/favicon.png',
     }),
+
     new ESLintPlugin({
       extensions: ['ts'],
       fix: true,

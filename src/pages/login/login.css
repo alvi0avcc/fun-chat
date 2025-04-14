@@ -1,0 +1,19 @@
+.form {
+  align-self: center;
+  padding: 5px;
+  border: solid 1px white;
+  border-radius: 5px;
+}
+
+.fieldset {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  width: 400px;
+  border-radius: 5px;
+}
+
+.form-btn {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 100px;
+}

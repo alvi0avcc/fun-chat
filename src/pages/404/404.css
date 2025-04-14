@@ -1,0 +1,14 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.h1 {
+  color: #f00;
+}
+
+.a {
+  align-self: center;
+  color: #fff;
+}

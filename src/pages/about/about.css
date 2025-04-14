@@ -1,0 +1,14 @@
+.main.main-winners {
+  justify-content: unset;
+}
+
+.table,
+.th,
+.td {
+  border: 1px solid blue;
+  text-align: center;
+}
+
+.sort {
+  cursor: pointer;
+}

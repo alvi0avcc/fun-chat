@@ -1,0 +1,58 @@
+:root {
+  --background-color: #000;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+
+  height: 100dvh;
+  padding: 5px;
+
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+
+  background-color: var(--background-color);
+}
+
+.main {
+  overflow: auto;
+  flex-grow: 1;
+}
+
+.h1 {
+  color: #fff;
+}
+
+.button {
+  cursor: pointer;
+
+  height: 1.5rem;
+  padding: 2px 5px;
+  border: 1px solid;
+  border-radius: 4px;
+
+  font-weight: inherit;
+  color: #000;
+  text-decoration: none;
+
+  background-color: #d3d3d3;
+}
+
+.button:disabled {
+  cursor: default;
+  color: grey !important;
+}
+
+.input {
+  height: 1.5rem;
+  border-radius: 4px;
+  background-color: #d3d3d3;
+}
