@@ -97,7 +97,7 @@ export const button = ({
   text = '',
   type = 'button',
   disabled = false,
-  callback = undefined,
+  callback,
   styles = ['button'],
   attributes = {},
 }: {
@@ -109,17 +109,15 @@ export const button = ({
   styles?: string[];
   attributes?: Record<string, string>;
 }): HTMLButtonElement => {
-  const element: HTMLButtonElement = document.createElement('button');
-  if (id) element.id = id;
-  if (text) element.textContent = text;
-  if (type) element.type = type;
-  if (disabled) element.disabled = disabled;
-  if (styles) element.classList.add(...styles);
-  if (attributes)
-    for (const [key, value] of Object.entries(attributes)) {
-      element.setAttribute(key, value);
-    }
-  if (callback) element.addEventListener('click', (event) => callback(event));
+  const element = Object.assign(document.createElement('button'), {
+    id,
+    textContent: text,
+    type,
+    disabled,
+  });
+  element.classList.add(...styles);
+  for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
+  if (callback) element.addEventListener('click', callback);
   return element;
 };
 
@@ -130,7 +128,9 @@ export const input = ({
   value = '',
   list = '',
   disabled = false,
-  callback = undefined,
+  title,
+  callback,
+  eventType = 'change',
   styles = ['input'],
   attributes = {},
 }: {
@@ -140,29 +140,32 @@ export const input = ({
   list?: string;
   value?: string;
   disabled?: boolean;
+  title?: string;
   callback?: EventListener;
+  eventType?: 'change' | 'keypress' | 'input';
   styles?: string[];
   attributes?: Record<string, string>;
 }): HTMLInputElement => {
-  const element: HTMLInputElement = document.createElement('input');
-  if (id) element.id = id;
-  if (placeholder) element.placeholder = placeholder;
-  if (type) element.type = type;
+  const element = Object.assign(document.createElement('input'), {
+    id,
+    placeholder,
+    type,
+    value,
+    disabled,
+    title,
+  });
+
   if (list) element.setAttribute('list', list);
-  if (value) element.value = value;
-  if (disabled) element.disabled = disabled;
-  if (styles) element.classList.add(...styles);
-  if (attributes)
-    for (const [key, value] of Object.entries(attributes)) {
-      element.setAttribute(key, value);
-    }
-  if (callback) element.addEventListener('change', (event) => callback(event));
+  if (styles.length > 0) element.classList.add(...styles);
+  for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
+  if (callback) element.addEventListener(eventType, callback);
+
   return element;
 };
 
 export const datalist = ({
   id = '',
-  children = undefined,
+  children,
   styles = ['datalist'],
   attributes = {},
 }: {
@@ -171,14 +174,10 @@ export const datalist = ({
   styles?: string[];
   attributes?: Record<string, string>;
 }): HTMLDataListElement => {
-  const element: HTMLDataListElement = document.createElement('datalist');
-  if (id) element.id = id;
+  const element = Object.assign(document.createElement('datalist'), { id });
   if (children) element.append(...children);
-  if (styles) element.classList.add(...styles);
-  if (attributes)
-    for (const [key, value] of Object.entries(attributes)) {
-      element.setAttribute(key, value);
-    }
+  element.classList.add(...styles);
+  for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
   return element;
 };
 

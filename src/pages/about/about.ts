@@ -18,6 +18,7 @@ export class About {
       this.main = create.section({
         id: 'main',
         tag: 'main',
+        text: 'about...',
         styles: ['main'],
         children: [],
       });

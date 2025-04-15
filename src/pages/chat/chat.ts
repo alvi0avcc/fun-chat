@@ -18,6 +18,7 @@ export class Chat {
       this.main = create.section({
         id: 'main',
         tag: 'main',
+        text: 'chat is loading...',
         styles: ['main'],
         children: [],
       });

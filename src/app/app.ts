@@ -9,6 +9,8 @@ import { chat } from '../pages/chat/chat';
 import { about } from '../pages/about/about';
 import { notFoundView } from '../pages/404/404';
 
+import { wSocket } from '../websockets/websocket';
+
 const notFoundPage: Route = {
   path: '/404',
   view: (root: HTMLElement): void => {
@@ -22,8 +24,15 @@ const routes: Route[] = [
     path: '/',
     view: async (root: HTMLElement): Promise<void> => {
       if (header) root.append(header);
-      await login.init();
-      root.append(login.getView());
+      if (wSocket.isLogined) {
+        // globalThis.history.pushState({}, '', '#/chat');
+        globalThis.location.href = '#/chat';
+        await chat.init();
+        root.append(chat.getView());
+      } else {
+        await login.init();
+        root.append(login.getView());
+      }
     },
   },
   {
@@ -39,7 +48,7 @@ const routes: Route[] = [
     view: async (root: HTMLElement): Promise<void> => {
       if (header) root.append(header);
       await about.init();
-      root.append(chat.getView());
+      root.append(about.getView());
     },
   },
   notFoundPage,

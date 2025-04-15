@@ -10,7 +10,7 @@ export const notFoundView = (): HTMLElement => {
   const h1: HTMLHeadingElement = create.h({ id: 'h1', tag: 'h1', text: 'Wrong page! Error - 404' });
   const button: HTMLAnchorElement = create.a({
     id: 'btn-return',
-    text: 'Return to Garage',
+    text: 'Return to Home Page',
     href: '/',
     attributes: { 'data-router-link': '' },
   });
