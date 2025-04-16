@@ -23,9 +23,10 @@ export class About {
         styles: ['main'],
         children: [
           html.section({
-            tag: 'article',
+            tag: 'article-about',
             children: [
               html.section({
+                styles: ['section', 'title'],
                 children: [html.label({ text: 'Fun Chat' }), html.img({ source: image })],
               }),
               html.p({
@@ -37,7 +38,7 @@ export class About {
                 href: 'https://github.com/rolling-scopes-school/tasks/blob/master/stage2/tasks/fun-chat/README.md',
                 target: '_blank',
               }),
-              html.p({ text: 'Your advertisement could be here.' }),
+              html.p({ text: 'Your advertisement could be here.', align: 'center' }),
               html.a({
                 text: 'Go to Chat',
                 href: '#/chat',

@@ -1,15 +1,10 @@
-.dialog {
+.dialog-reconnect {
   display: flex;
   align-items: center;
   justify-content: center;
 
   margin: auto;
   border-radius: 50%;
-}
-
-.dialog::backdrop {
-  opacity: 0.95;
-  background-color: darkslategrey;
 }
 
 .h2 {

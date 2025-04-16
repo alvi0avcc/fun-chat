@@ -1,4 +1,4 @@
-.article {
+.article-about {
   display: flex;
   flex-direction: column;
   align-self: center;
@@ -11,21 +11,21 @@
   border-radius: 10px;
 }
 
-.section {
+.title {
   display: flex;
   align-items: center;
   justify-content: space-around;
 }
 
-.label {
+.title .label {
   font-size: 1.5rem;
   color: #f00;
 }
 
-.img {
+.title .img {
   width: fit-content;
 }
 
-.p {
+.article-about .p {
   margin: 10px;
 }

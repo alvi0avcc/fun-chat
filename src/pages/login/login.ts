@@ -1,6 +1,6 @@
 import './login.css';
 
-import * as create from '../../builder/elements';
+import * as html from '../../builder/elements';
 import { wSocket } from '../../websockets/websocket';
 
 interface User {
@@ -22,20 +22,24 @@ export class Login {
   constructor() {
     this.main = undefined;
     this.user = { login: undefined, pwd: undefined };
-    this.loginBtn = create.button({
+    this.loginBtn = html.button({
       text: 'Login',
       disabled: true,
       callback: () => {
         if (this.user.login && this.user.pwd)
           wSocket.login(this.user.login, this.user.pwd).then((response) => {
-            console.log(response);
+            console.log('login result =', response);
             if (response?.result) {
               globalThis.location.href = '#/chat';
+            }
+            if (response?.message === 'incorrect password') {
+              console.log('incorrect password');
+              messageWrongPassword(response?.message);
             }
           });
       },
     });
-    this.aboutBtn = create.a({
+    this.aboutBtn = html.a({
       text: 'About',
       href: '/about',
       attributes: { 'data-router-link': '' },
@@ -50,7 +54,7 @@ export class Login {
 
   public async init(): Promise<void> {
     if (!this.main) {
-      this.main = create.section({
+      this.main = html.section({
         id: 'main',
         tag: 'main',
         styles: ['main'],
@@ -61,7 +65,7 @@ export class Login {
   }
 
   private initBtnNamePwd(): void {
-    this.nameInput = create.input({
+    this.nameInput = html.input({
       id: 'login',
       type: 'text',
       placeholder: 'User Name',
@@ -79,7 +83,7 @@ export class Login {
       if (this.checkEnter(event.key)) this.loginBtn.click();
     });
 
-    this.pwdInput = create.input({
+    this.pwdInput = html.input({
       id: 'passwd',
       type: 'password',
       placeholder: 'Password',
@@ -99,21 +103,21 @@ export class Login {
   }
 
   private loginForm(): HTMLElement {
-    return create.section({
+    return html.section({
       id: 'login-form',
       tag: 'form',
       children: [
-        create.section({
+        html.section({
           tag: 'fieldset',
           children: [
-            create.section({ tag: 'legend', text: 'Authorization' }),
-            create.label({ text: 'Login', htmlFor: 'login' }),
+            html.section({ tag: 'legend', text: 'Authorization' }),
+            html.label({ text: 'Login', htmlFor: 'login' }),
             this.nameInput,
-            create.label({ text: 'Password', htmlFor: 'passwd' }),
+            html.label({ text: 'Password', htmlFor: 'passwd' }),
             this.pwdInput,
           ],
         }),
-        create.section({
+        html.section({
           tag: 'div',
           styles: ['form-btn'],
           children: [this.loginBtn, this.aboutBtn],
@@ -141,8 +145,27 @@ export const login = new Login();
 
 //---------------------------------------
 
-function inputValue(data: Event, min = 4, max = 15): string | undefined {
+const inputValue = (data: Event, min = 4, max = 15): string | undefined => {
   const result: string = data.target instanceof HTMLInputElement ? data.target.value : '';
   if (result.length >= min && result.length <= max) return result;
   return undefined;
-}
+};
+
+const messageWrongPassword = (message: string): void => {
+  const dlg: HTMLDialogElement = html.dialog({
+    styles: ['dialog', 'dialog-wrong-pwd'],
+    children: [
+      html.h({ tag: 'h3', text: message }),
+      html.button({
+        type: 'reset',
+        text: 'OK',
+        callback: () => dlg.close(),
+      }),
+    ],
+  });
+
+  dlg.addEventListener('close', () => dlg.remove());
+
+  document.body.append(dlg);
+  dlg.showModal();
+};

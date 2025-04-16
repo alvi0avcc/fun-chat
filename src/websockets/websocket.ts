@@ -149,6 +149,7 @@ class WebS {
     if (!this.loadingDlg) {
       this.loadingDlg = html.dialog({
         id: 'try-connect-dialog',
+        styles: ['dialog', 'dialog-reconnect'],
         children: [html.img({ source: loadingImg }), html.h({ tag: 'h2', text: 'connecting' })],
       });
 

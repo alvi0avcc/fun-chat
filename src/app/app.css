@@ -39,6 +39,8 @@ body {
   border: 1px solid;
   border-radius: 4px;
 
+  font-family: inherit;
+  font-size: inherit;
   font-weight: inherit;
   color: #000;
   text-align: center;
@@ -56,4 +58,9 @@ body {
   height: 1.5rem;
   border-radius: 4px;
   background-color: #d3d3d3;
+}
+
+.dialog::backdrop {
+  opacity: 0.95;
+  background-color: darkslategrey;
 }

@@ -21,3 +21,17 @@
 input:invalid {
   background-color: red;
 }
+
+.dialog-wrong-pwd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  place-self: center center;
+
+  border-radius: 10px;
+}
+
+.dialog-wrong-pwd .button {
+  width: fit-content;
+  margin-top: 10px;
+}

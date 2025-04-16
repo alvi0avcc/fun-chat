@@ -473,8 +473,8 @@ export const dialog = ({
 }): HTMLDialogElement => {
   const element: HTMLDialogElement = document.createElement('dialog');
   if (id) element.id = id;
-  if (text) element.textContent = text;
-  if (styles) element.classList.add(...styles);
+  element.textContent = text;
+  element.classList.add(...styles);
   if (children) element.append(...children);
   if (attributes)
     for (const [key, value] of Object.entries(attributes)) {
@@ -484,12 +484,32 @@ export const dialog = ({
   return element;
 };
 
-export const form = (id = 'form'): HTMLFormElement => {
-  const form = document.createElement('form');
-  form.id = id;
-  form.textContent = '';
-
-  return form;
+export const form = ({
+  id = undefined,
+  text = '',
+  children = undefined,
+  callback = undefined,
+  styles = ['form'],
+  attributes = {},
+}: {
+  id?: string;
+  text?: string;
+  children?: HTMLElement[];
+  callback?: EventListener;
+  styles?: string[];
+  attributes?: Record<string, string>;
+}): HTMLFormElement => {
+  const element: HTMLFormElement = document.createElement('form');
+  if (id) element.id = id;
+  element.textContent = text;
+  element.classList.add(...styles);
+  if (children) element.append(...children);
+  if (attributes)
+    for (const [key, value] of Object.entries(attributes)) {
+      element.setAttribute(key, value);
+    }
+  if (callback) element.addEventListener('click', callback);
+  return element;
 };
 
 export const textArea = (id = 'text-area'): HTMLTextAreaElement => {
