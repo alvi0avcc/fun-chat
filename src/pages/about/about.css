@@ -1,14 +1,31 @@
-.main.main-winners {
-  justify-content: unset;
+.article {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+
+  width: 70%;
+  min-width: 180px;
+  max-width: 450px;
+  padding: 10px;
+  border: 1px solid #fff;
+  border-radius: 10px;
 }
 
-.table,
-.th,
-.td {
-  border: 1px solid blue;
-  text-align: center;
+.section {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
 }
 
-.sort {
-  cursor: pointer;
+.label {
+  font-size: 1.5rem;
+  color: #f00;
+}
+
+.img {
+  width: fit-content;
+}
+
+.p {
+  margin: 10px;
 }

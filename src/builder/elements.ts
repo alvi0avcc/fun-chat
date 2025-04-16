@@ -8,7 +8,7 @@ export const section = ({
   attributes = {},
 }: {
   id?: string;
-  tag: string;
+  tag?: string;
   text?: string;
   children?: HTMLElement[];
   callback?: EventListener;
@@ -16,20 +16,21 @@ export const section = ({
   attributes?: Record<string, string>;
 }): HTMLElement => {
   const element: HTMLElement = document.createElement(tag);
+  element.textContent = text;
+
   if (id) element.id = id;
-  if (text) element.textContent = text;
-  if (styles) element.classList.add(...styles);
+  element.classList.add(...styles);
   if (children) element.append(...children);
   if (attributes)
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value);
     }
-  if (callback) element.addEventListener('click', (event) => callback(event));
+  if (callback) element.addEventListener('click', callback);
   return element;
 };
 
 export const h = ({
-  id = '',
+  id = undefined,
   tag = 'h1',
   text = '',
   align = 'center',
@@ -47,23 +48,49 @@ export const h = ({
 }): HTMLHeadingElement => {
   const element: HTMLHeadingElement = document.createElement(tag);
   if (id) element.id = id;
-  if (text) element.textContent = text;
-  if (align) element.style.textAlign = align;
-  if (styles) element.classList.add(...styles);
+  element.textContent = text;
+  element.style.textAlign = align;
+  element.classList.add(...styles);
   if (attributes)
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value);
     }
-  if (callback) element.addEventListener('click', (event) => callback(event));
+  if (callback) element.addEventListener('click', callback);
+  return element;
+};
+
+export const p = ({
+  id = undefined,
+  text = '',
+  align = 'left',
+  callback,
+  styles = ['p'],
+  attributes = {},
+}: {
+  id?: string;
+  text?: string;
+  align?: 'center' | 'left' | 'right';
+  callback?: EventListener;
+  styles?: string[];
+  attributes?: Record<string, string>;
+}): HTMLParagraphElement => {
+  const element = document.createElement('p');
+  if (id) element.id = id;
+  element.textContent = text;
+  element.style.textAlign = align;
+  element.classList.add(...styles);
+  for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
+  if (callback) element.addEventListener('click', callback);
+
   return element;
 };
 
 export const a = ({
-  id = '',
+  id = undefined,
   text = '',
   href = '',
   target = '_self',
-  callback = undefined,
+  callback,
   styles = ['a'],
   attributes = {},
 }: {
@@ -75,25 +102,22 @@ export const a = ({
   styles?: string[];
   attributes?: Record<string, string>;
 }): HTMLAnchorElement => {
-  const element: HTMLAnchorElement = document.createElement('a');
+  const element = Object.assign(document.createElement('a'), {
+    textContent: text,
+    href,
+    target,
+    rel: target === '_blank' ? 'noopener noreferrer' : undefined,
+  });
   if (id) element.id = id;
-  if (text) element.textContent = text;
-  if (href) element.href = href;
-  if (target) element.target = target;
-  if (target === '_blank') {
-    element.rel = 'noopener noreferrer';
-  }
-  if (styles) element.classList.add(...styles);
-  if (attributes)
-    for (const [key, value] of Object.entries(attributes)) {
-      element.setAttribute(key, value);
-    }
-  if (callback) element.addEventListener('click', (event) => callback(event));
+  element.classList.add(...styles);
+  for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
+  if (callback) element.addEventListener('click', callback);
+
   return element;
 };
 
 export const button = ({
-  id = '',
+  id = undefined,
   text = '',
   type = 'button',
   disabled = false,
@@ -110,11 +134,11 @@ export const button = ({
   attributes?: Record<string, string>;
 }): HTMLButtonElement => {
   const element = Object.assign(document.createElement('button'), {
-    id,
     textContent: text,
     type,
     disabled,
   });
+  if (id) element.id = id;
   element.classList.add(...styles);
   for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
   if (callback) element.addEventListener('click', callback);
@@ -122,7 +146,7 @@ export const button = ({
 };
 
 export const input = ({
-  id = '',
+  id = undefined,
   placeholder = '',
   type = 'text',
   value = '',
@@ -147,14 +171,13 @@ export const input = ({
   attributes?: Record<string, string>;
 }): HTMLInputElement => {
   const element = Object.assign(document.createElement('input'), {
-    id,
     placeholder,
     type,
     value,
     disabled,
     title,
   });
-
+  if (id) element.id = id;
   if (list) element.setAttribute('list', list);
   if (styles.length > 0) element.classList.add(...styles);
   for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
@@ -164,7 +187,7 @@ export const input = ({
 };
 
 export const datalist = ({
-  id = '',
+  id = undefined,
   children,
   styles = ['datalist'],
   attributes = {},
@@ -174,7 +197,9 @@ export const datalist = ({
   styles?: string[];
   attributes?: Record<string, string>;
 }): HTMLDataListElement => {
-  const element = Object.assign(document.createElement('datalist'), { id });
+  const element = document.createElement('datalist');
+  if (id) element.id = id;
+
   if (children) element.append(...children);
   element.classList.add(...styles);
   for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
@@ -188,12 +213,12 @@ export const inputFileLoad = (id = '', callback?: (event: Event) => void): HTMLI
   input.accept = '.json';
   input.hidden = true;
   input.value = '';
-  if (callback) input.addEventListener('input', (event: Event) => callback(event));
+  if (callback) input.addEventListener('input', callback);
   return input;
 };
 
 export const label = ({
-  id = '',
+  id = undefined,
   text = 'label',
   htmlFor = undefined,
   callback = undefined,
@@ -205,13 +230,14 @@ export const label = ({
   callback?: EventListener;
   styles?: string[];
 }): HTMLLabelElement => {
-  const label: HTMLLabelElement = document.createElement('label');
-  if (id) label.id = id;
-  if (text) label.textContent = text;
-  if (htmlFor) label.htmlFor = htmlFor;
-  if (styles) label.classList.add(...styles);
-  if (callback) label.addEventListener('click', (event) => callback(event));
-  return label;
+  const element: HTMLLabelElement = Object.assign(document.createElement('label'), {
+    textContent: text,
+    htmlFor,
+  });
+  if (id) element.id = id;
+  element.classList.add(...styles);
+  if (callback) element.addEventListener('click', callback);
+  return element;
 };
 
 export const select = ({
@@ -235,7 +261,7 @@ export const select = ({
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value);
     }
-  if (callback) element.addEventListener('change', (event) => callback(event));
+  if (callback) element.addEventListener('change', callback);
   return element;
 };
 
@@ -263,7 +289,7 @@ export const options = ({
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value);
     }
-  if (callback) element.addEventListener('click', (event) => callback(event));
+  if (callback) element.addEventListener('click', callback);
   return element;
 };
 
@@ -282,7 +308,7 @@ export const img = ({
   if (id) element.id = id;
   if (source) element.src = source;
   if (styles) element.classList.add(...styles);
-  if (callback) element.addEventListener('click', (event) => callback(event));
+  if (callback) element.addEventListener('click', callback);
   return element;
 };
 
@@ -321,7 +347,7 @@ export const svg = ({
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value);
     }
-  if (callback) element.addEventListener('click', (event) => callback(event));
+  if (callback) element.addEventListener('click', callback);
   const container: HTMLElement = document.createElement('div');
   container.append(element);
 
@@ -366,7 +392,7 @@ export const svgImage = ({
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value);
     }
-  if (callback) element.addEventListener('click', (event) => callback(event));
+  if (callback) element.addEventListener('click', callback);
 
   return element;
 };
@@ -398,7 +424,7 @@ export const use = ({
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value);
     }
-  if (callback) element.addEventListener('click', (event) => callback(event));
+  if (callback) element.addEventListener('click', callback);
   return element;
 };
 
@@ -412,7 +438,7 @@ export const ul = (
   ul.id = id;
   ul.textContent = text;
   ul.classList.add(tag);
-  if (callback) ul.addEventListener('click', (event) => callback(event));
+  if (callback) ul.addEventListener('click', callback);
   return ul;
 };
 
@@ -426,7 +452,7 @@ export const li = (
   li.id = id;
   li.textContent = text;
   li.classList.add(tag);
-  if (callback) li.addEventListener('click', (event) => callback(event));
+  if (callback) li.addEventListener('click', callback);
   return li;
 };
 
@@ -454,7 +480,7 @@ export const dialog = ({
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value);
     }
-  if (callback) element.addEventListener('click', (event) => callback(event));
+  if (callback) element.addEventListener('click', callback);
   return element;
 };
 
