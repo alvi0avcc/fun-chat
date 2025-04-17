@@ -11,18 +11,18 @@
   border-radius: 10px;
 }
 
-.title {
+.about-title {
   display: flex;
   align-items: center;
   justify-content: space-around;
 }
 
-.title .label {
+.about-title .label {
   font-size: 1.5rem;
   color: #f00;
 }
 
-.title .img {
+.about-title .img {
   width: fit-content;
 }
 

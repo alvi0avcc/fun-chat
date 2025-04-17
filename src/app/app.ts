@@ -25,7 +25,6 @@ const routes: Route[] = [
     view: async (root: HTMLElement): Promise<void> => {
       if (header) root.append(header);
       if (wSocket.isLogined) {
-        // globalThis.history.pushState({}, '', '#/chat');
         globalThis.location.href = '#/chat';
         await chat.init();
         root.append(chat.getView());
@@ -64,5 +63,6 @@ export default class App {
 
   public init(): void {
     this.router = new Router(this.root, routes, notFoundPage);
+    wSocket.create();
   }
 }

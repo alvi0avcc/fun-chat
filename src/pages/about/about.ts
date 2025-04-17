@@ -26,7 +26,7 @@ export class About {
             tag: 'article-about',
             children: [
               html.section({
-                styles: ['section', 'title'],
+                styles: ['section', 'about-title'],
                 children: [html.label({ text: 'Fun Chat' }), html.img({ source: image })],
               }),
               html.p({

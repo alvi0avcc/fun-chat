@@ -428,18 +428,40 @@ export const use = ({
   return element;
 };
 
-export const ul = (
-  tag = 'ul',
+// export const ul = (
+//   tag = 'ul',
+//   id = '',
+//   text = '',
+//   callback: EventListener | undefined = undefined
+// ): HTMLElement => {
+//   const ul: HTMLElement = document.createElement('ul');
+//   ul.id = id;
+//   ul.textContent = text;
+//   ul.classList.add(tag);
+//   if (callback) ul.addEventListener('click', callback);
+//   return ul;
+// };
+
+export const ul = ({
   id = '',
-  text = '',
-  callback: EventListener | undefined = undefined
-): HTMLElement => {
-  const ul: HTMLElement = document.createElement('ul');
-  ul.id = id;
-  ul.textContent = text;
-  ul.classList.add(tag);
-  if (callback) ul.addEventListener('click', callback);
-  return ul;
+  callback = undefined,
+  styles = ['use'],
+  attributes = undefined,
+}: {
+  id?: string;
+  callback?: EventListener;
+  styles?: string[];
+  attributes?: Record<string, string>;
+}): HTMLUListElement => {
+  const element: HTMLUListElement = document.createElement('ul');
+  if (id) element.id = id;
+  element.classList.add(...styles);
+  if (attributes)
+    for (const [key, value] of Object.entries(attributes)) {
+      element.setAttribute(key, value);
+    }
+  if (callback) element.addEventListener('click', callback);
+  return element;
 };
 
 export const li = (

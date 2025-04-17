@@ -1,14 +1,57 @@
-.main.main-winners {
-  justify-content: unset;
+.chat .section {
+  border: 1px solid #fff;
 }
 
-.table,
-.th,
-.td {
-  border: 1px solid blue;
-  text-align: center;
+.chat-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px;
 }
 
-.sort {
-  cursor: pointer;
+.chat-logo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.chat-title-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.chat-title-buttons .button {
+  width: 80px;
+}
+
+.chat {
+  display: flex;
+  flex: 1;
+}
+
+.user-section {
+  display: flex;
+  flex-direction: column;
+  width: 30%;
+}
+
+.divider {
+  cursor: col-resize;
+  width: 3px;
+  background: #aaa;
+}
+
+.chat-section {
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 30px;
 }
