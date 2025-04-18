@@ -124,7 +124,9 @@ export const button = ({
   text = '',
   type = 'button',
   disabled = false,
+
   callback,
+  children = undefined,
   styles = ['button'],
   attributes = {},
 }: {
@@ -133,6 +135,8 @@ export const button = ({
   type?: 'reset' | 'submit' | 'button';
   disabled?: boolean;
   callback?: EventListener;
+  children?: HTMLElement[];
+
   styles?: string[];
   attributes?: Record<string, string>;
 }): HTMLButtonElement => {
@@ -142,6 +146,7 @@ export const button = ({
     disabled,
   });
   if (id) element.id = id;
+  if (children) element.append(...children);
   element.classList.add(...styles);
   for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
   if (callback) element.addEventListener('click', callback);
@@ -246,12 +251,14 @@ export const label = ({
 export const select = ({
   id = '',
   disabled = false,
+  children = undefined,
   callback = undefined,
   styles = ['select'],
   attributes = {},
 }: {
   id?: string;
   disabled?: boolean;
+  children?: HTMLElement[];
   callback?: EventListener;
   styles?: string[];
   attributes?: Record<string, string>;
@@ -259,7 +266,8 @@ export const select = ({
   const element: HTMLSelectElement = document.createElement('select');
   if (id) element.id = id;
   if (disabled) element.disabled = disabled;
-  if (styles) element.classList.add(...styles);
+  if (children) element.append(...children);
+  element.classList.add(...styles);
   if (attributes)
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value);
@@ -268,16 +276,18 @@ export const select = ({
   return element;
 };
 
-export const options = ({
-  id = '',
+export const option = ({
+  id = undefined,
+  text = '',
   value = '',
-  disabled = false,
+  disabled = undefined,
   callback = undefined,
   styles = ['option'],
   attributes = {},
 }: {
   id?: string;
-  value: string;
+  text?: string;
+  value?: string;
   disabled?: boolean;
   callback?: EventListener;
   styles?: string[];
@@ -286,13 +296,14 @@ export const options = ({
   const element: HTMLOptionElement = document.createElement('option');
   if (id) element.id = id;
   if (value) element.value = value;
+  element.textContent = text;
   if (disabled) element.disabled = disabled;
-  if (styles) element.classList.add(...styles);
+  element.classList.add(...styles);
   if (attributes)
     for (const [key, value] of Object.entries(attributes)) {
       element.setAttribute(key, value);
     }
-  if (callback) element.addEventListener('click', callback);
+  if (callback) element.addEventListener('select', callback);
   return element;
 };
 
@@ -446,18 +457,21 @@ export const use = ({
 // };
 
 export const ul = ({
-  id = '',
+  id = undefined,
+  children = undefined,
   callback = undefined,
-  styles = ['use'],
+  styles = ['ul'],
   attributes = undefined,
 }: {
   id?: string;
+  children?: HTMLElement[];
   callback?: EventListener;
   styles?: string[];
   attributes?: Record<string, string>;
 }): HTMLUListElement => {
   const element: HTMLUListElement = document.createElement('ul');
   if (id) element.id = id;
+  if (children) element.append(...children);
   element.classList.add(...styles);
   if (attributes)
     for (const [key, value] of Object.entries(attributes)) {
@@ -467,18 +481,32 @@ export const ul = ({
   return element;
 };
 
-export const li = (
-  tag = 'li',
-  id = '',
-  text = '',
-  callback: EventListener | undefined = undefined
-): HTMLElement => {
-  const li: HTMLElement = document.createElement('li');
-  li.id = id;
-  li.textContent = text;
-  li.classList.add(tag);
-  if (callback) li.addEventListener('click', callback);
-  return li;
+export const li = ({
+  id = undefined,
+  value = undefined,
+  children = undefined,
+  callback = undefined,
+  styles = ['li'],
+  attributes = undefined,
+}: {
+  id?: string;
+  value?: number;
+  children?: HTMLElement[];
+  callback?: EventListener;
+  styles?: string[];
+  attributes?: Record<string, string>;
+}): HTMLLIElement => {
+  const element: HTMLLIElement = document.createElement('li');
+  if (id) element.id = id;
+  if (value) element.value = value;
+  if (children) element.append(...children);
+  element.classList.add(...styles);
+  if (attributes)
+    for (const [key, value] of Object.entries(attributes)) {
+      element.setAttribute(key, value);
+    }
+  if (callback) element.addEventListener('click', callback);
+  return element;
 };
 
 export const dialog = ({

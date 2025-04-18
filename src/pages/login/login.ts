@@ -1,7 +1,9 @@
 import './login.css';
+import gear from '../../assets/gear.svg';
 
 import * as html from '../../builder/elements';
 import { wSocket } from '../../websockets/websocket';
+import { dlgServerSelect } from '../../websockets/server-select';
 
 interface User {
   login: string | undefined;
@@ -13,6 +15,7 @@ const maxLength = 15;
 
 export class Login {
   private main: HTMLElement | undefined;
+  private currentServerLabel: HTMLLabelElement = document.createElement('label');
   private user: User;
   private loginBtn: HTMLButtonElement;
   private aboutBtn: HTMLAnchorElement;
@@ -46,6 +49,10 @@ export class Login {
       styles: ['button'],
     });
     this.initBtnNamePwd();
+  }
+
+  public setCurrentServerLabel(): void {
+    this.currentServerLabel.textContent = wSocket.getUrl;
   }
 
   public getView(): HTMLElement {
@@ -107,6 +114,21 @@ export class Login {
       id: 'login-form',
       tag: 'form',
       children: [
+        html.section({
+          id: 'current-server-info',
+          styles: ['section', 'current-server-info'],
+          children: [
+            this.currentServerLabel,
+            html.button({
+              styles: ['settings'],
+              children: [html.img({ source: gear })],
+              attributes: { title: 'Click for select server' },
+              callback: () => {
+                dlgServerSelect();
+              },
+            }),
+          ],
+        }),
         html.section({
           tag: 'fieldset',
           children: [

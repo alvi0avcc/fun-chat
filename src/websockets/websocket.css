@@ -1,10 +1,27 @@
-.dialog-reconnect {
+.dialog {
   display: flex;
   align-items: center;
   justify-content: center;
-
   margin: auto;
+}
+
+.dialog-reconnect {
+  overflow: hidden;
   border-radius: 50%;
+}
+
+.dialog-reconnect .settings {
+  position: absolute;
+  bottom: 0;
+}
+
+.dialog-server-select {
+  flex-direction: column;
+  border-radius: 10px;
+}
+
+.dialog-server-select .select {
+  margin: 10px;
 }
 
 .h2 {

@@ -2,6 +2,10 @@ import './websocket.css';
 import * as html from '../builder/elements';
 
 import loadingImg from '../assets/loading.gif';
+import { dlgServerSelect } from './server-select';
+import gear from '../assets/gear.svg';
+
+import { login } from '../pages/login/login';
 
 interface UserLogin {
   id: string;
@@ -39,6 +43,10 @@ class WebS {
     this.logined = false;
   }
 
+  public get getUrl(): string {
+    return this.url;
+  }
+
   public get isLogined(): boolean {
     return this.logined;
   }
@@ -46,6 +54,14 @@ class WebS {
   public get isReady(): boolean {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) return true;
     return false;
+  }
+
+  public set setUrl(url: string) {
+    if (!url) return;
+    this.url = url;
+    this.socket?.close();
+    this.create();
+    console.log(this.socket);
   }
 
   public create(): void {
@@ -143,6 +159,7 @@ class WebS {
       this.loadingDlg.remove();
       this.loadingDlg = undefined;
     }
+    login.setCurrentServerLabel();
   }
 
   private onClose(): void {
@@ -150,7 +167,18 @@ class WebS {
       this.loadingDlg = html.dialog({
         id: 'try-connect-dialog',
         styles: ['dialog', 'dialog-reconnect'],
-        children: [html.img({ source: loadingImg }), html.h({ tag: 'h2', text: 'connecting' })],
+        children: [
+          html.img({ source: loadingImg }),
+          html.h({ tag: 'h2', text: 'connecting' }),
+          html.button({
+            styles: ['settings'],
+            children: [html.img({ source: gear })],
+            attributes: { title: 'Click for select server' },
+            callback: () => {
+              dlgServerSelect();
+            },
+          }),
+        ],
       });
 
       document.body.append(this.loadingDlg);
