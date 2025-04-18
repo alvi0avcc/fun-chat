@@ -2,6 +2,7 @@ import './chat.css';
 import logo from '../../assets/chat-icon.png';
 
 import * as html from '../../builder/elements';
+import { footer } from '../chat/footer';
 
 import { dividerInit } from '../../divider/divider';
 
@@ -77,7 +78,12 @@ export class Chat {
       children: [
         html.section({
           tag: 'div',
-          children: [html.p({ text: `User: ${this.userName || 'Incognito'}` })],
+          children: [
+            html.p({
+              text: `User: ${this.userName || 'Incognito'}`,
+              styles: ['p', 'title-user-name'],
+            }),
+          ],
         }),
         html.section({
           tag: 'div',
@@ -113,17 +119,3 @@ export class Chat {
 }
 
 export const chat = new Chat();
-
-//----------------
-
-const footer = (): HTMLElement => {
-  return html.section({
-    id: 'footer',
-    styles: ['section', 'footer'],
-    children: [
-      html.a({ text: 'RS School', href: 'https://rs.school/', target: '_blank' }),
-      html.a({ text: 'alvi0avcc', href: 'https://github.com/alvi0avcc', target: '_blank' }),
-      html.label({ text: '2025' }),
-    ],
-  });
-};

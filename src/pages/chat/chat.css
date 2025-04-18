@@ -16,6 +16,11 @@
   align-items: center;
 }
 
+.title-user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .chat-title-buttons {
   display: flex;
   flex-wrap: wrap;

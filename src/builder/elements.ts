@@ -90,6 +90,7 @@ export const a = ({
   text = '',
   href = '',
   target = '_self',
+  children = undefined,
   callback,
   styles = ['a'],
   attributes = {},
@@ -98,6 +99,7 @@ export const a = ({
   text?: string;
   href?: string;
   target?: '_blank' | '_self' | '_parent' | '_top';
+  children?: HTMLElement[];
   callback?: EventListener;
   styles?: string[];
   attributes?: Record<string, string>;
@@ -109,6 +111,7 @@ export const a = ({
     rel: target === '_blank' ? 'noopener noreferrer' : undefined,
   });
   if (id) element.id = id;
+  if (children) element.append(...children);
   element.classList.add(...styles);
   for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
   if (callback) element.addEventListener('click', callback);
