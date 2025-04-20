@@ -6,58 +6,56 @@ import { footer } from '../chat/footer';
 
 import { dividerInit } from '../../divider/divider';
 
+import { wSocket } from '../../websockets/websocket';
+import type { User } from '../../websockets/websocket';
+
 export class Chat {
-  private main: HTMLElement | undefined;
-  private userSection: HTMLElement = html.createElement();
-  private chatSection: HTMLElement = html.createElement();
-  private divider: HTMLElement = html.createElement();
+  private main: HTMLElement;
+  private userSection: HTMLElement;
+  private chatSection: HTMLElement;
+  private divider: HTMLElement;
   private userName: string | undefined;
+  private usersList: HTMLSelectElement;
 
   constructor() {
-    this.main = undefined;
+    this.usersList = html.select({ id: 'users-list', styles: ['select', 'users-list'] });
+    this.userSection = this.userSectionCreate();
+    this.chatSection = this.chatSectionCreate();
+    this.divider = this.dividerCreate();
+    this.main = this.mainSectionCreate();
   }
 
   public getView(): HTMLElement {
+    wSocket.getActiveUsers();
     return this.main ?? document.createElement('div');
   }
 
   public async init(): Promise<void> {
-    this.userSectionCreate();
-    this.dividerCreate();
-    this.chatSectionCreate();
-
-    if (!this.main) {
-      this.main = html.section({
-        id: 'main',
-        tag: 'main',
-        styles: ['main', 'chat'],
-        children: [this.tittle(), this.chat(), footer()],
-      });
-
-      dividerInit(this.divider, this.userSection, this.chatSection);
-    }
+    dividerInit(this.divider, this.userSection, this.chatSection);
   }
 
-  private dividerCreate(): void {
-    this.divider = html.section({ id: 'divider', styles: ['divider'] });
+  public userListCreate(users: User[]): void {
+    const options: HTMLOptionElement[] = users.map((user) => new Option(user.login, user.login));
+    this.usersList.size = options.length;
+    this.usersList.replaceChildren();
+    this.usersList.append(...options);
   }
 
-  private userSectionCreate(): void {
-    this.userSection = html.section({
+  private dividerCreate(): HTMLElement {
+    return (this.divider = html.section({ id: 'divider', styles: ['divider'] }));
+  }
+
+  private userSectionCreate(): HTMLElement {
+    if (!this.usersList) this.usersList = html.select({ id: 'users-list' });
+    return (this.userSection = html.section({
       id: 'user-section',
       styles: ['section', 'user-section'],
-      children: [
-        html.input({ type: 'text', placeholder: 'Search...' }),
-        html.section({
-          id: 'user-list-section',
-          children: [html.ul({ id: 'user-list' })],
-        }),
-      ],
-    });
+      children: [html.input({ type: 'text', placeholder: 'Search...' }), this.usersList],
+    }));
   }
 
-  private chatSectionCreate(): void {
-    this.chatSection = html.section({
+  private chatSectionCreate(): HTMLElement {
+    return (this.chatSection = html.section({
       id: 'chat-section',
       styles: ['section', 'chat-section'],
       children: [
@@ -68,7 +66,16 @@ export class Chat {
         }),
         html.section({}),
       ],
-    });
+    }));
+  }
+
+  private mainSectionCreate(): HTMLElement {
+    return (this.main = html.section({
+      id: 'main',
+      tag: 'main',
+      styles: ['main', 'chat'],
+      children: [this.tittle(), this.chat(), footer()],
+    }));
   }
 
   private tittle(): HTMLElement {

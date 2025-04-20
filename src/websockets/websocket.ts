@@ -1,3 +1,5 @@
+/* eslint unicorn/no-null: "off" */
+
 import './websocket.css';
 import * as html from '../builder/elements';
 
@@ -6,7 +8,9 @@ import { dlgServerSelect } from './server-select';
 import gear from '../assets/gear.svg';
 
 import { login } from '../pages/login/login';
+import { chat } from '../pages/chat/chat';
 
+const SERVER_NULL = null;
 interface UserLogin {
   id: string;
   type: 'USER_LOGIN';
@@ -32,8 +36,28 @@ interface LoginResult {
   message: string;
 }
 
+export interface User {
+  login: string;
+  isLogined: boolean;
+}
+
+interface requestActiveUsers {
+  id: string;
+  type: 'USER_ACTIVE';
+  payload: typeof SERVER_NULL;
+}
+
+interface responseActiveUsers {
+  id: string;
+  type: 'USER_ACTIVE';
+  payload: {
+    users: User[];
+  };
+}
+
 class WebS {
   private socket: WebSocket | undefined;
+  private pendingRequests = new Set<string>();
   private url: string;
   private logined: boolean;
   private loadingDlg: HTMLDialogElement | undefined;
@@ -83,7 +107,6 @@ class WebS {
       });
 
       this.socket.addEventListener('message', (event) => {
-        console.log('message =', event);
         this.onMessage(event);
       });
     }
@@ -107,6 +130,24 @@ class WebS {
     if (isUserLoginedResponse(response)) return { result: false, message: response.payload.error };
     if (!isUserLoginResponse(response))
       return { result: false, message: response.message || 'Invalid credentials' };
+  }
+
+  public getActiveUsers(): void {
+    if (!this.isReady || !this.socket) {
+      return;
+    }
+
+    const requestId = `req_${Date.now()}_${getSafeUUID()}`;
+
+    const request: requestActiveUsers = {
+      id: requestId,
+      type: 'USER_ACTIVE',
+      payload: SERVER_NULL,
+    };
+
+    this.pendingRequests.add(requestId);
+
+    this.socket.send(JSON.stringify(request));
   }
 
   private sendLoginRequest(request: UserLogin): Promise<UserLogin | LoginResult | UserLogined> {
@@ -191,8 +232,11 @@ class WebS {
   }
 
   private onMessage(event: MessageEvent): void {
+    console.log('message =', event);
+
     try {
       const response: unknown = JSON.parse(event.data);
+      console.log('response =', response);
 
       if (isUserLoginResponse(response)) {
         const { payload } = response;
@@ -200,6 +244,21 @@ class WebS {
         console.log('Logined:', response.payload.user.isLogined);
         this.logined = payload.user.isLogined ?? false;
         console.log(this.logined);
+      }
+
+      console.log('isActiveUserResponse =', isActiveUserResponse(response));
+
+      if (isActiveUserResponse(response)) {
+        const { id, payload } = response;
+        console.log(response);
+        console.log(id);
+        console.log(payload.users);
+        console.log(this.pendingRequests);
+        if (this.pendingRequests.has(id)) {
+          this.pendingRequests.delete(id);
+          console.log(`remove "${id}" from pendingRequests`);
+          chat.userListCreate(payload.users);
+        }
       }
     } catch (error) {
       console.error('Unknown error:', error);
@@ -239,4 +298,26 @@ function createLoginRequest(userName: string, password: string): UserLogin {
     type: 'USER_LOGIN',
     payload: { user: { login: userName, password } },
   };
+}
+
+function isActiveUserResponse(data: unknown): data is responseActiveUsers {
+  if (typeof data !== 'object' || data === null) return false;
+  if (!('id' in data) || !('type' in data) || !('payload' in data)) return false;
+  if (typeof data.id !== 'string' || data.type !== 'USER_ACTIVE') return false;
+  if (typeof data.payload !== 'object' || data.payload === null) return false;
+  if (!('id' in data) || !('type' in data) || !('payload' in data)) return false;
+  if (!('users' in data.payload) || !Array.isArray(data.payload.users)) return false;
+
+  return true;
+}
+
+function getSafeUUID(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replaceAll(/[xy]/g, (c) => {
+      const r = Math.trunc(Math.random() * 16);
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    });
+  }
 }

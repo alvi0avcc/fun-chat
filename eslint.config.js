@@ -19,7 +19,7 @@ export default [
       prettier,
     },
     linterOptions: {
-      noInlineConfig: true,
+      noInlineConfig: false,
       reportUnusedDisableDirectives: true,
     },
     rules: {
