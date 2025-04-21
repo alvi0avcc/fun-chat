@@ -565,12 +565,32 @@ export const form = ({
   return element;
 };
 
-export const textArea = (id = 'text-area'): HTMLTextAreaElement => {
-  const text = document.createElement('textarea');
-  text.id = id;
-  text.textContent = '';
-
-  return text;
+export const textArea = ({
+  id = undefined,
+  text = '',
+  placeholder = undefined,
+  callback = undefined,
+  styles = ['textarea'],
+  attributes = {},
+}: {
+  id?: string;
+  text?: string;
+  placeholder?: string;
+  callback?: EventListener;
+  styles?: string[];
+  attributes?: Record<string, string>;
+}): HTMLTextAreaElement => {
+  const element: HTMLTextAreaElement = document.createElement('textarea');
+  if (id) element.id = id;
+  if (placeholder) element.placeholder = placeholder;
+  element.textContent = text;
+  element.classList.add(...styles);
+  if (attributes)
+    for (const [key, value] of Object.entries(attributes)) {
+      element.setAttribute(key, value);
+    }
+  if (callback) element.addEventListener('input', callback);
+  return element;
 };
 
 export const createElement = (tag = 'div'): HTMLElement => {

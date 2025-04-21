@@ -1,9 +1,14 @@
+:root {
+  --height-title: 100px;
+  --height-footer: 30px;
+}
+
 .chat-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  height: 100px;
+  height: var(--height-title);
   padding: 5px;
 }
 
@@ -35,7 +40,16 @@
 
 .section.chat {
   display: flex;
-  height: 100%;
+  height: calc(100vh - var(--height-title) - var(--height-footer));
+}
+
+.write-section {
+  display: flex;
+  align-items: center;
+}
+
+.write-section .textarea {
+  flex-grow: 1;
 }
 
 .user-section {
@@ -65,5 +79,5 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  height: 30px;
+  height: var(--height-footer);
 }

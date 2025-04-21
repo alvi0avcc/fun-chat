@@ -7,6 +7,8 @@ import { footer } from '../chat/footer';
 import { dividerInit } from '../../divider/divider';
 
 import { wSocket } from '../../websockets/websocket';
+import { chatMessages } from './chat-messages';
+import type { Message } from './chat-messages';
 import type { User } from '../../websockets/websocket';
 
 export class Chat {
@@ -14,12 +16,25 @@ export class Chat {
   private userSection: HTMLElement;
   private chatSection: HTMLElement;
   private divider: HTMLElement;
-  private userName: string | undefined;
+  private userName = '';
+  private userForMessage = '';
   private usersList: HTMLSelectElement;
+  private chatMessage: HTMLElement;
 
   constructor() {
     this.usersList = html.select({ id: 'users-list', styles: ['select', 'users-list'] });
+    this.usersList.addEventListener('click', (event: Event) => {
+      console.log(event);
+      if (event.target && 'value' in event.target) {
+        console.log('value =', event.target.value);
+        if (event.target.value && typeof event.target.value === 'string') {
+          this.userForMessage = event.target.value;
+          this.chatMessageReadWrite();
+        }
+      }
+    });
     this.userSection = this.userSectionCreate();
+    this.chatMessage = this.chatMessageCreate();
     this.chatSection = this.chatSectionCreate();
     this.divider = this.dividerCreate();
     this.main = this.mainSectionCreate();
@@ -27,6 +42,10 @@ export class Chat {
 
   public get getUserName(): string {
     return this.userName || '';
+  }
+
+  public set setUserName(userName: string) {
+    this.userName = userName;
   }
 
   public getView(): HTMLElement {
@@ -40,9 +59,28 @@ export class Chat {
 
   public userListCreate(users: User[]): void {
     const options: HTMLOptionElement[] = users.map((user) => new Option(user.login, user.login));
-    this.usersList.size = options.length;
+    this.usersList.size = options.length + 1;
     this.usersList.replaceChildren();
     this.usersList.append(...options);
+  }
+
+  public chatMessageUpdate(): void {
+    console.log('chatMessageUpdate');
+    console.log('this.userName =', this.userName);
+    console.log('this.userForMessage =', this.userForMessage);
+
+    if (this.userName) {
+      const userMessages: Message[] | undefined = chatMessages.getUserMessage(this.userForMessage);
+      console.log('userMessages =', userMessages);
+
+      if (userMessages) {
+        console.log('chatMessageUpdate =', userMessages);
+        this.chatMessage.replaceChildren();
+        for (const message of userMessages) {
+          this.chatMessage.append(html.section({ text: message.message }));
+        }
+      }
+    }
   }
 
   private dividerCreate(): HTMLElement {
@@ -59,18 +97,68 @@ export class Chat {
   }
 
   private chatSectionCreate(): HTMLElement {
+    let message = '';
     return (this.chatSection = html.section({
       id: 'chat-section',
       styles: ['section', 'chat-section'],
       children: [
         html.section({}),
+        this.chatMessage,
         html.section({
-          id: 'message-section',
-          children: [],
+          styles: ['write-section'],
+          children: [
+            html.textArea({
+              placeholder: 'write message...',
+              callback: (event) => {
+                console.log('write message... =', event);
+
+                if (
+                  event.target &&
+                  'value' in event.target &&
+                  typeof event.target.value === 'string'
+                ) {
+                  console.log('write message... =', event.target.value);
+                  message = event.target.value;
+                }
+              },
+            }),
+            html.button({
+              text: 'Send',
+              callback: () => {
+                wSocket.sendMessage(this.userForMessage, message);
+              },
+            }),
+          ],
         }),
-        html.section({}),
       ],
     }));
+  }
+
+  private chatMessageCreate(): HTMLElement {
+    return (this.chatMessage = html.section({
+      id: 'chat-messages',
+      styles: ['section', 'chat-messages'],
+    }));
+  }
+
+  private chatMessageReadWrite(): void {
+    console.log('chatMessageReadWrite');
+
+    if (this.userName && chatMessages) {
+      const messages: Message[] | undefined = chatMessages.getUserMessage(this.userName);
+      this.chatMessage.replaceChildren();
+      if (messages) {
+        console.log('messages');
+
+        for (const element of messages) {
+          this.chatMessage.append(html.section({ text: element.message }));
+        }
+      } else {
+        console.log('start start messaging');
+
+        this.chatMessage.append(html.section({ text: 'Start messaging' }));
+      }
+    }
   }
 
   private mainSectionCreate(): HTMLElement {

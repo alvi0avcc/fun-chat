@@ -10,6 +10,9 @@ import gear from '../assets/gear.svg';
 import { login } from '../pages/login/login';
 import { chat } from '../pages/chat/chat';
 
+import { chatMessages } from '../pages/chat/chat-messages';
+import type { Message } from '../pages/chat/chat-messages';
+
 const SERVER_NULL = null;
 interface UserLogin {
   id: string;
@@ -61,7 +64,7 @@ interface MessageStatus {
   isEdited: boolean;
 }
 
-interface UserMessage {
+export interface UserMessage {
   id: string;
   from: string;
   to: string;
@@ -155,6 +158,24 @@ class WebS {
     if (isUserLoginedResponse(response)) return { result: false, message: response.payload.error };
     if (!isUserLoginResponse(response))
       return { result: false, message: response.message || 'Invalid credentials' };
+  }
+
+  public sendMessage(userName: string, message: string): void {
+    if (userName && message && this.socket && this.isLogined) {
+      const idRequest = getSafeUUID();
+      // this.pendingRequests.add(idRequest);
+      const request = {
+        id: idRequest,
+        type: 'MSG_SEND',
+        payload: {
+          message: {
+            to: userName,
+            text: message,
+          },
+        },
+      };
+      this.socket.send(JSON.stringify(request));
+    }
   }
 
   public getActiveUsers(): void {
@@ -265,9 +286,10 @@ class WebS {
 
       if (isUserLoginResponse(response)) {
         const { payload } = response;
-        console.log(response);
-        console.log('Logined:', response.payload.user.isLogined);
+        // console.log(response);
+        // console.log('Logined:', response.payload.user.isLogined);
         this.logined = payload.user.isLogined ?? false;
+        if (this.logined) chat.setUserName = payload.user.login;
         console.log(this.logined);
       }
 
@@ -275,13 +297,8 @@ class WebS {
 
       if (isActiveUserResponse(response)) {
         const { id, payload } = response;
-        console.log(response);
-        console.log(id);
-        console.log(payload.users);
-        console.log(this.pendingRequests);
         if (this.pendingRequests.has(id)) {
           this.pendingRequests.delete(id);
-          console.log(`remove "${id}" from pendingRequests`);
           chat.userListCreate(payload.users);
         }
       }
@@ -292,8 +309,18 @@ class WebS {
         const { payload } = response;
         console.log(response);
         console.log(payload.message);
-        if (payload.message.from === chat.getUserName) {
-          //todo - add structure message fro users
+        if (payload.message.to === chat.getUserName) {
+          const message: Message = {
+            message: payload.message.text,
+            inOut: 'in',
+            status: payload.message.status,
+          };
+          console.log('addNewMessage init');
+
+          chatMessages.addNewMessage(payload.message.from, message.message, 'in');
+          console.log('addNewMessage finis');
+
+          chat.chatMessageUpdate();
         }
       }
     } catch (error) {
