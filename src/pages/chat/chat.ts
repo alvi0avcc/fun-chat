@@ -25,6 +25,10 @@ export class Chat {
     this.main = this.mainSectionCreate();
   }
 
+  public get getUserName(): string {
+    return this.userName || '';
+  }
+
   public getView(): HTMLElement {
     wSocket.getActiveUsers();
     return this.main ?? document.createElement('div');

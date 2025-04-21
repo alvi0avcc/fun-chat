@@ -55,6 +55,31 @@ interface responseActiveUsers {
   };
 }
 
+interface MessageStatus {
+  isDelivered: boolean;
+  isReaded: boolean;
+  isEdited: boolean;
+}
+
+interface UserMessage {
+  id: string;
+  from: string;
+  to: string;
+  text: string;
+  datetime: number;
+  status: MessageStatus;
+}
+
+interface MessagePayload {
+  message: UserMessage;
+}
+
+interface MessageFromUser {
+  id: null;
+  type: 'MSG_SEND';
+  payload: MessagePayload;
+}
+
 class WebS {
   private socket: WebSocket | undefined;
   private pendingRequests = new Set<string>();
@@ -260,6 +285,17 @@ class WebS {
           chat.userListCreate(payload.users);
         }
       }
+
+      console.log('isMessageFromUser =', isMessageFromUser(response));
+
+      if (isMessageFromUser(response)) {
+        const { payload } = response;
+        console.log(response);
+        console.log(payload.message);
+        if (payload.message.from === chat.getUserName) {
+          //todo - add structure message fro users
+        }
+      }
     } catch (error) {
       console.error('Unknown error:', error);
     }
@@ -305,7 +341,6 @@ function isActiveUserResponse(data: unknown): data is responseActiveUsers {
   if (!('id' in data) || !('type' in data) || !('payload' in data)) return false;
   if (typeof data.id !== 'string' || data.type !== 'USER_ACTIVE') return false;
   if (typeof data.payload !== 'object' || data.payload === null) return false;
-  if (!('id' in data) || !('type' in data) || !('payload' in data)) return false;
   if (!('users' in data.payload) || !Array.isArray(data.payload.users)) return false;
 
   return true;
@@ -320,4 +355,52 @@ function getSafeUUID(): string {
       return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
     });
   }
+}
+
+function isMessageFromUser(data: unknown): data is MessageFromUser {
+  if (typeof data !== 'object' || data === null) return false;
+  if (!('id' in data) || data.id !== null) return false;
+  if (!('type' in data) || data.type !== 'MSG_SEND') return false;
+  if (!('payload' in data) || typeof data.payload !== 'object' || data.payload === null)
+    return false;
+  if (
+    !('message' in data.payload) ||
+    typeof data.payload.message !== 'object' ||
+    data.payload.message === null
+  )
+    return false;
+  if (
+    !existsAndCorrespondsType('id', data.payload.message, 'string') ||
+    !existsAndCorrespondsType('from', data.payload.message, 'string') ||
+    !existsAndCorrespondsType('to', data.payload.message, 'string') ||
+    !existsAndCorrespondsType('text', data.payload.message, 'string') ||
+    !existsAndCorrespondsType('datetime', data.payload.message, 'number')
+  ) {
+    return false;
+  }
+  if (
+    !('status' in data.payload.message) ||
+    typeof data.payload.message.status !== 'object' ||
+    data.payload.message.status === null
+  )
+    return false;
+
+  return (
+    existsAndCorrespondsType('isDelivered', data.payload.message.status, 'boolean') ||
+    existsAndCorrespondsType('isReaded', data.payload.message.status, 'boolean') ||
+    existsAndCorrespondsType('isEdited', data.payload.message.status, 'boolean')
+  );
+}
+
+function existsAndCorrespondsType(
+  field: string,
+  data: object,
+  type: 'string' | 'number' | 'boolean' | 'object' | 'function' | 'symbol' | 'bigint'
+): boolean {
+  if (!(field in data)) return false;
+
+  const descriptor = Object.getOwnPropertyDescriptor(data, field);
+  if (!descriptor || !('value' in descriptor)) return false;
+
+  return typeof descriptor.value === type;
 }
