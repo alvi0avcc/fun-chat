@@ -8,6 +8,7 @@ import { dlgServerSelect } from './server-select';
 import gear from '../assets/gear.svg';
 
 import { login } from '../pages/login/login';
+import type { User as LoginUser } from '../pages/login/login';
 import { chat } from '../pages/chat/chat';
 
 import { chatMessages } from '../pages/chat/chat-messages';
@@ -141,6 +142,7 @@ class WebS {
   }
 
   public close(code = 1000, reason = 'Connection closed'): void {
+    this.logined = false;
     if (!this.socket || this.socket?.CLOSED) this.socket?.close(code, reason);
   }
 
@@ -149,15 +151,36 @@ class WebS {
 
     const request = createLoginRequest(userName, password);
     const response = await this.sendLoginRequest(request);
-    // console.log('test=', response);
 
     if (isUserLoginResponse(response) && response.payload.user.isLogined)
       return { result: true, message: 'Login successful' };
-    // console.log('auth =', isUserLoginedResponse(response));
 
-    if (isUserLoginedResponse(response)) return { result: false, message: response.payload.error };
+    if (isUserLoginedResponse(response)) {
+      console.log(response.payload.error);
+
+      return { result: false, message: response.payload.error };
+    }
     if (!isUserLoginResponse(response))
       return { result: false, message: response.message || 'Invalid credentials' };
+  }
+
+  public logOut(user: LoginUser): void {
+    const data = {
+      id: getSafeUUID(),
+      type: 'USER_LOGOUT',
+      payload: {
+        user: {
+          login: user.login,
+          password: user.pwd,
+        },
+      },
+    };
+
+    const request: string = JSON.stringify(data);
+    this.socket?.send(request);
+    this.logined = false;
+
+    login.logOut();
   }
 
   public sendMessage(userName: string, message: string): void {
@@ -203,8 +226,6 @@ class WebS {
       const handler = (event: MessageEvent): void => {
         try {
           const response: unknown = JSON.parse(event.data);
-          // console.log('test2 =', response);
-          // console.log('auth2 =', isUserLoginedResponse(response));
 
           if (isUserLoginResponse(response) && response.id === request.id) {
             cleanup();
@@ -282,15 +303,15 @@ class WebS {
 
     try {
       const response: unknown = JSON.parse(event.data);
-      console.log('response =', response);
+      // console.log('response =', response);
 
       if (isUserLoginResponse(response)) {
         const { payload } = response;
-        // console.log(response);
-        // console.log('Logined:', response.payload.user.isLogined);
         this.logined = payload.user.isLogined ?? false;
-        if (this.logined) chat.setUserName = payload.user.login;
-        console.log(this.logined);
+        if (this.logined) {
+          chat.setUserName = payload.user.login;
+        }
+        // console.log(this.logined);
       }
 
       console.log('isActiveUserResponse =', isActiveUserResponse(response));

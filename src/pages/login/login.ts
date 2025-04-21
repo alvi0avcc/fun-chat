@@ -5,13 +5,15 @@ import * as html from '../../builder/elements';
 import { wSocket } from '../../websockets/websocket';
 import { dlgServerSelect } from '../../websockets/server-select';
 
-interface User {
-  login: string | undefined;
-  pwd: string | undefined;
+export interface User {
+  login: string;
+  pwd: string;
 }
 
-const minLength = 4;
-const maxLength = 15;
+const minLength = 5; //for login & pwd
+const maxLength = 15; //for login & pwd
+
+const storageKey = 'user';
 
 export class Login {
   private main: HTMLElement | undefined;
@@ -24,22 +26,26 @@ export class Login {
 
   constructor() {
     this.main = undefined;
-    this.user = { login: undefined, pwd: undefined };
+    this.user = { login: '', pwd: '' };
     this.loginBtn = html.button({
       text: 'Login',
       disabled: true,
       callback: () => {
-        if (this.user.login && this.user.pwd)
-          wSocket.login(this.user.login, this.user.pwd).then((response) => {
-            console.log('login result =', response);
+        if (this.user.login && this.user.pwd) {
+          const login: string = this.user.login;
+          const pwd: string = this.user.pwd;
+
+          wSocket.login(login, pwd).then((response) => {
             if (response?.result) {
               globalThis.location.href = '#/chat';
+              this.setSessionStorageLogin();
             }
             if (response?.message === 'incorrect password') {
               console.log('incorrect password');
               messageWrongPassword(response?.message);
             }
           });
+        }
       },
     });
     this.aboutBtn = html.a({
@@ -55,7 +61,13 @@ export class Login {
     this.currentServerLabel.textContent = wSocket.getUrl;
   }
 
+  public getUserInfo(): User {
+    return this.user;
+  }
+
   public getView(): HTMLElement {
+    this.getSessionStorageLogin();
+
     return this.main ?? document.createElement('div');
   }
 
@@ -71,6 +83,17 @@ export class Login {
     }
   }
 
+  public logOut(): void {
+    try {
+      sessionStorage.removeItem(storageKey);
+      this.user = { login: '', pwd: '' };
+
+      globalThis.location.href = '#/';
+    } catch (error) {
+      console.error('Error saving to sessionStorage:', error);
+    }
+  }
+
   private initBtnNamePwd(): void {
     this.nameInput = html.input({
       id: 'login',
@@ -81,7 +104,7 @@ export class Login {
       eventType: 'input',
       callback: (event) => {
         console.log(event);
-        this.user.login = inputValue(event, minLength, maxLength);
+        this.user.login = inputValue(event, minLength, maxLength, 'login') || '';
         this.loginBtn.disabled = this.user.login && this.user.pwd ? false : true;
       },
     });
@@ -99,7 +122,7 @@ export class Login {
       eventType: 'input',
       callback: (event) => {
         console.log(event);
-        this.user.pwd = inputValue(event, minLength, maxLength);
+        this.user.pwd = inputValue(event, minLength, maxLength, 'pwd') || '';
         this.loginBtn.disabled = this.user.login && this.user.pwd ? false : true;
       },
     });
@@ -161,15 +184,68 @@ export class Login {
       return true;
     return false;
   }
+  private setSessionStorageLogin(): void {
+    try {
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify({ login: this.user.login, pwd: this.user.pwd })
+      );
+    } catch (error) {
+      console.error('Error saving to sessionStorage:', error);
+    }
+  }
+
+  private getSessionStorageLogin(): void {
+    try {
+      const storedData: string | undefined = sessionStorage.getItem(storageKey) || undefined;
+      if (storedData) {
+        const parsedData: unknown = JSON.parse(storedData);
+        if (
+          parsedData &&
+          typeof parsedData === 'object' &&
+          'login' in parsedData &&
+          typeof parsedData.login === 'string' &&
+          'pwd' in parsedData &&
+          typeof parsedData.pwd === 'string'
+        ) {
+          this.user.login = parsedData.login;
+          this.user.pwd = parsedData.pwd;
+
+          wSocket.login(this.user.login, this.user.pwd).then((response) => {
+            if (response?.result) {
+              globalThis.location.href = '#/chat';
+              this.setSessionStorageLogin();
+            }
+            if (response?.message === 'incorrect password') {
+              console.log('incorrect password');
+              messageWrongPassword(response?.message);
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error saving to sessionStorage:', error);
+    }
+  }
 }
 
 export const login = new Login();
 
 //---------------------------------------
 
-const inputValue = (data: Event, min = 4, max = 15): string | undefined => {
+const inputValue = (data: Event, min = 5, max = 15, type: 'login' | 'pwd'): string | undefined => {
   const result: string = data.target instanceof HTMLInputElement ? data.target.value : '';
-  if (result.length >= min && result.length <= max) return result;
+  const value: string = result.trim();
+
+  if (value.length >= min && value.length <= max) {
+    if (type === 'login' && /^[a-zA-Zа-яА-ЯёЁ0-9]+$/.test(value)) {
+      return value;
+    }
+    if (type === 'pwd' && /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/? ]+$/.test(value)) {
+      return value;
+    }
+  }
+
   return undefined;
 };
 

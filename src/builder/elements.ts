@@ -238,11 +238,10 @@ export const label = ({
   callback?: EventListener;
   styles?: string[];
 }): HTMLLabelElement => {
-  const element: HTMLLabelElement = Object.assign(document.createElement('label'), {
-    textContent: text,
-    htmlFor,
-  });
+  const element: HTMLLabelElement = document.createElement('label');
   if (id) element.id = id;
+  if (htmlFor) element.htmlFor = htmlFor;
+  element.textContent = text;
   element.classList.add(...styles);
   if (callback) element.addEventListener('click', callback);
   return element;

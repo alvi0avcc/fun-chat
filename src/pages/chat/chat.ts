@@ -10,6 +10,8 @@ import { wSocket } from '../../websockets/websocket';
 import { chatMessages } from './chat-messages';
 import type { Message } from './chat-messages';
 import type { User } from '../../websockets/websocket';
+import { login } from '../login/login';
+// import type { User as LoginUser } from '../login/login';
 
 export class Chat {
   private main: HTMLElement;
@@ -17,6 +19,7 @@ export class Chat {
   private chatSection: HTMLElement;
   private divider: HTMLElement;
   private userName = '';
+  private titleUserName: HTMLLabelElement;
   private userForMessage = '';
   private usersList: HTMLSelectElement;
   private chatMessage: HTMLElement;
@@ -32,6 +35,10 @@ export class Chat {
           this.chatMessageReadWrite();
         }
       }
+    });
+    this.titleUserName = html.label({
+      text: `User: ${this.userName || 'Incognito'}`,
+      styles: ['label', 'title-username'],
     });
     this.userSection = this.userSectionCreate();
     this.chatMessage = this.chatMessageCreate();
@@ -49,6 +56,7 @@ export class Chat {
   }
 
   public getView(): HTMLElement {
+    this.titleUserName.textContent = `User: ${this.userName || 'Incognito'}`;
     wSocket.getActiveUsers();
     return this.main ?? document.createElement('div');
   }
@@ -177,12 +185,7 @@ export class Chat {
       children: [
         html.section({
           tag: 'div',
-          children: [
-            html.p({
-              text: `User: ${this.userName || 'Incognito'}`,
-              styles: ['p', 'title-user-name'],
-            }),
-          ],
+          children: [this.titleUserName],
         }),
         html.section({
           tag: 'div',
@@ -201,6 +204,7 @@ export class Chat {
             }),
             html.button({
               text: 'Exit',
+              callback: () => wSocket.logOut(login.getUserInfo()),
             }),
           ],
         }),

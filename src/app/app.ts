@@ -3,7 +3,6 @@ import './app.css';
 import type { Route } from '../router/router';
 import { Router } from '../router/router';
 
-// import { header } from '../pages/header-nav/header-nav';
 import { login } from '../pages/login/login';
 import { chat } from '../pages/chat/chat';
 import { about } from '../pages/about/about';
@@ -14,7 +13,6 @@ import { wSocket } from '../websockets/websocket';
 const notFoundPage: Route = {
   path: '/404',
   view: (root: HTMLElement): void => {
-    // if (header) root.append(header);
     root.append(notFoundView());
   },
 };
@@ -23,7 +21,6 @@ const routes: Route[] = [
   {
     path: '/',
     view: async (root: HTMLElement): Promise<void> => {
-      // if (header) root.append(header);
       if (wSocket.isLogined) {
         globalThis.location.href = '#/chat';
         await chat.init();
@@ -37,15 +34,17 @@ const routes: Route[] = [
   {
     path: '/chat',
     view: async (root: HTMLElement): Promise<void> => {
-      // if (header) root.append(header);
-      await chat.init();
-      root.append(chat.getView());
+      if (wSocket.isLogined) {
+        await chat.init();
+        root.append(chat.getView());
+      } else {
+        globalThis.location.href = '#/';
+      }
     },
   },
   {
     path: '/about',
     view: async (root: HTMLElement): Promise<void> => {
-      // if (header) root.append(header);
       await about.init();
       root.append(about.getView());
     },
