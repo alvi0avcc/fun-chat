@@ -51,11 +51,39 @@ interface requestActiveUsers {
   payload: typeof SERVER_NULL;
 }
 
+interface requestInActiveUsers {
+  id: string;
+  type: 'USER_INACTIVE';
+  payload: typeof SERVER_NULL;
+}
+
 interface responseActiveUsers {
   id: string;
   type: 'USER_ACTIVE';
   payload: {
     users: User[];
+  };
+}
+
+interface responseThirdPartyUserAuthentication {
+  id: string;
+  type: 'USER_EXTERNAL_LOGIN';
+  payload: {
+    user: {
+      login: string;
+      isLogined: boolean;
+    };
+  };
+}
+
+interface responseThirdPartyUserLogout {
+  id: string;
+  type: 'USER_EXTERNAL_LOGOUT';
+  payload: {
+    user: {
+      login: string;
+      isLogined: boolean;
+    };
   };
 }
 
@@ -219,6 +247,24 @@ class WebS {
     this.socket.send(JSON.stringify(request));
   }
 
+  public getInActiveUsers(): void {
+    if (!this.isReady || !this.socket) {
+      return;
+    }
+
+    const requestId = `req_${Date.now()}_${getSafeUUID()}`;
+
+    const request: requestInActiveUsers = {
+      id: requestId,
+      type: 'USER_INACTIVE',
+      payload: SERVER_NULL,
+    };
+
+    this.pendingRequests.add(requestId);
+
+    this.socket.send(JSON.stringify(request));
+  }
+
   private sendLoginRequest(request: UserLogin): Promise<UserLogin | LoginResult | UserLogined> {
     return new Promise((resolve, reject) => {
       const cleanup = (): void => this.socket?.removeEventListener('message', handler);
@@ -299,7 +345,7 @@ class WebS {
   }
 
   private onMessage(event: MessageEvent): void {
-    console.log('message =', event);
+    // console.log('message =', event);
 
     try {
       const response: unknown = JSON.parse(event.data);
@@ -314,36 +360,39 @@ class WebS {
         // console.log(this.logined);
       }
 
-      console.log('isActiveUserResponse =', isActiveUserResponse(response));
+      // console.log('isActiveUserResponse =', isActiveUserResponse(response));
 
       if (isActiveUserResponse(response)) {
         const { id, payload } = response;
         if (this.pendingRequests.has(id)) {
           this.pendingRequests.delete(id);
-          chat.userListCreate(payload.users);
+          // chat.userListCreate(payload.users);
+          chat.setActiveUsers = payload.users;
         }
       }
 
-      console.log('isMessageFromUser =', isMessageFromUser(response));
+      // console.log('isInActiveUserResponse =', isInActiveUserResponse(response));
 
-      if (isMessageFromUser(response)) {
-        const { payload } = response;
-        console.log(response);
-        console.log(payload.message);
-        if (payload.message.to === chat.getUserName) {
-          const message: Message = {
-            message: payload.message.text,
-            inOut: 'in',
-            status: payload.message.status,
-          };
-          console.log('addNewMessage init');
-
-          chatMessages.addNewMessage(payload.message.from, message.message, 'in');
-          console.log('addNewMessage finis');
-
-          chat.chatMessageUpdate();
+      if (isInActiveUserResponse(response)) {
+        const { id, payload } = response;
+        if (this.pendingRequests.has(id)) {
+          this.pendingRequests.delete(id);
+          // chat.userListCreate(payload.users);
+          chat.setInActiveUsers = payload.users;
         }
       }
+
+      // console.log('isThirdPartyUserAuthentication =', isThirdPartyUserAuthentication(response));
+
+      ThirdPartyUserAuthentication(response);
+
+      // console.log('isThirdPartyUserLogout =', isThirdPartyUserLogout(response));
+
+      ThirdPartyUserLogout(response);
+
+      // console.log('isMessageFromUser =', isMessageFromUser(response));
+
+      MessageFromUser(response);
     } catch (error) {
       console.error('Unknown error:', error);
     }
@@ -390,6 +439,70 @@ function isActiveUserResponse(data: unknown): data is responseActiveUsers {
   if (typeof data.id !== 'string' || data.type !== 'USER_ACTIVE') return false;
   if (typeof data.payload !== 'object' || data.payload === null) return false;
   if (!('users' in data.payload) || !Array.isArray(data.payload.users)) return false;
+
+  return true;
+}
+
+function isInActiveUserResponse(data: unknown): data is responseActiveUsers {
+  if (typeof data !== 'object' || data === null) return false;
+  if (!('id' in data) || !('type' in data) || !('payload' in data)) return false;
+  if (typeof data.id !== 'string' || data.type !== 'USER_INACTIVE') return false;
+  if (typeof data.payload !== 'object' || data.payload === null) return false;
+  if (!('users' in data.payload) || !Array.isArray(data.payload.users)) return false;
+
+  return true;
+}
+
+function isThirdPartyUserAuthentication(
+  data: unknown
+): data is responseThirdPartyUserAuthentication {
+  if (typeof data !== 'object' || data === null) return false;
+  if (!('id' in data) || data.id !== null) return false;
+  if (!('type' in data) || data.type !== 'USER_EXTERNAL_LOGIN') return false;
+  if (!existsAndCorrespondsType('payload', data, 'object')) return false;
+  if (!('payload' in data) || typeof data.payload !== 'object' || data.payload === null)
+    return false;
+  if (
+    !('user' in data.payload) ||
+    typeof data.payload.user !== 'object' ||
+    data.payload.user === null
+  )
+    return false;
+  if (
+    !('user' in data.payload) ||
+    typeof data.payload.user !== 'object' ||
+    data.payload.user === null
+  )
+    return false;
+
+  if (!existsAndCorrespondsType('login', data.payload.user, 'string')) return false;
+  if (!existsAndCorrespondsType('isLogined', data.payload.user, 'boolean')) return false;
+
+  return true;
+}
+
+function isThirdPartyUserLogout(data: unknown): data is responseThirdPartyUserLogout {
+  if (typeof data !== 'object' || data === null) return false;
+  if (!('id' in data) || data.id !== null) return false;
+  if (!('type' in data) || data.type !== 'USER_EXTERNAL_LOGOUT') return false;
+  if (!existsAndCorrespondsType('payload', data, 'object')) return false;
+  if (!('payload' in data) || typeof data.payload !== 'object' || data.payload === null)
+    return false;
+  if (
+    !('user' in data.payload) ||
+    typeof data.payload.user !== 'object' ||
+    data.payload.user === null
+  )
+    return false;
+  if (
+    !('user' in data.payload) ||
+    typeof data.payload.user !== 'object' ||
+    data.payload.user === null
+  )
+    return false;
+
+  if (!existsAndCorrespondsType('login', data.payload.user, 'string')) return false;
+  if (!existsAndCorrespondsType('isLogined', data.payload.user, 'boolean')) return false;
 
   return true;
 }
@@ -451,4 +564,39 @@ function existsAndCorrespondsType(
   if (!descriptor || !('value' in descriptor)) return false;
 
   return typeof descriptor.value === type;
+}
+
+function ThirdPartyUserAuthentication(response: unknown): void {
+  if (isThirdPartyUserAuthentication(response)) {
+    const { payload } = response;
+    chat.addActiveUser(payload.user);
+  }
+}
+
+function ThirdPartyUserLogout(response: unknown): void {
+  if (isThirdPartyUserLogout(response)) {
+    const { payload } = response;
+    chat.removeInActiveUser(payload.user);
+  }
+}
+
+function MessageFromUser(response: unknown): void {
+  if (isMessageFromUser(response)) {
+    const { payload } = response;
+    // console.log(response);
+    // console.log(payload.message);
+    if (payload.message.to === chat.getUserName) {
+      const message: Message = {
+        message: payload.message.text,
+        inOut: 'in',
+        status: payload.message.status,
+      };
+      // console.log('addNewMessage init');
+
+      chatMessages.addNewMessage(payload.message.from, message.message, 'in');
+      // console.log('addNewMessage finis');
+
+      chat.chatMessageUpdate();
+    }
+  }
 }

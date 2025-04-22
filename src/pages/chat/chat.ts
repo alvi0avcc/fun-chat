@@ -21,6 +21,9 @@ export class Chat {
   private userName = '';
   private titleUserName: HTMLLabelElement;
   private userForMessage = '';
+  private activeUsers: User[] = [];
+  private inActiveUsers: User[] = [];
+  private allUsers: User[] = [];
   private usersList: HTMLSelectElement;
   private chatMessage: HTMLElement;
 
@@ -51,13 +54,43 @@ export class Chat {
     return this.userName || '';
   }
 
+  public set setActiveUsers(users: User[]) {
+    this.activeUsers = users.filter((user) => user.login !== this.userName);
+    this.updateUserList();
+  }
+
+  public set setInActiveUsers(users: User[]) {
+    this.inActiveUsers = users.filter((user) => user.login !== this.userName);
+    this.updateUserList();
+  }
+
   public set setUserName(userName: string) {
     this.userName = userName;
+  }
+
+  public addActiveUser(newUser: User): void {
+    if (!this.activeUsers.some((user) => user.login === newUser.login)) {
+      this.activeUsers.push(newUser);
+    }
+    const index: number = this.inActiveUsers.findIndex((user) => user.login === newUser.login);
+    if (index !== -1) this.inActiveUsers.splice(index, 1);
+    this.updateUserList();
+  }
+
+  public removeInActiveUser(oldUser: User): void {
+    const index: number = this.activeUsers.findIndex((user) => user.login === oldUser.login);
+    if (index !== -1) this.activeUsers.splice(index, 1);
+
+    if (!this.inActiveUsers.some((user) => user.login === oldUser.login)) {
+      this.inActiveUsers.push(oldUser);
+    }
+    this.updateUserList();
   }
 
   public getView(): HTMLElement {
     this.titleUserName.textContent = `User: ${this.userName || 'Incognito'}`;
     wSocket.getActiveUsers();
+    wSocket.getInActiveUsers();
     return this.main ?? document.createElement('div');
   }
 
@@ -66,7 +99,14 @@ export class Chat {
   }
 
   public userListCreate(users: User[]): void {
-    const options: HTMLOptionElement[] = users.map((user) => new Option(user.login, user.login));
+    // const options: HTMLOptionElement[] = users.map((user) => new Option(user.login, user.login));
+    const options: HTMLOptionElement[] = users.map((user) =>
+      html.option({
+        text: user.login,
+        value: user.login,
+        styles: ['option', `option-${user.isLogined ? 'active' : 'inactive'}`],
+      })
+    );
     this.usersList.size = options.length + 1;
     this.usersList.replaceChildren();
     this.usersList.append(...options);
@@ -89,6 +129,11 @@ export class Chat {
         }
       }
     }
+  }
+
+  private updateUserList(): void {
+    this.allUsers = [...this.activeUsers, ...this.inActiveUsers];
+    this.userListCreate(this.allUsers);
   }
 
   private dividerCreate(): HTMLElement {

@@ -80,6 +80,22 @@
   white-space: pre;
 }
 
+.option-active {
+  color: green;
+}
+
+.option-active::before {
+  content: '• ';
+}
+
+.option-inactive {
+  color: red;
+}
+
+.option-inactive::before {
+  content: '• ';
+}
+
 .chat-section {
   display: flex;
   flex-direction: column;
