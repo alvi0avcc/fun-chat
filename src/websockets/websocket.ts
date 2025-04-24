@@ -27,7 +27,7 @@ interface UserLogin {
   };
 }
 
-interface UserLogined {
+interface UserLoginError {
   id: string;
   type: 'ERROR';
   payload: {
@@ -35,7 +35,7 @@ interface UserLogined {
   };
 }
 
-interface LoginResult {
+export interface LoginResult {
   result: boolean;
   message: string;
 }
@@ -142,30 +142,21 @@ class WebS {
     this.url = url;
     this.socket?.close();
     this.create();
-    console.log(this.socket);
   }
 
   public create(): void {
     if (!this.socket || this.socket?.CLOSED) {
       this.socket = new WebSocket(this.url);
 
-      this.socket.addEventListener('open', (event) => {
-        console.log('open =', event);
-        this.onOpen();
-      });
+      this.socket.addEventListener('open', () => this.onOpen());
 
-      this.socket.addEventListener('close', (event) => {
-        console.log('close =', event);
-        this.onClose();
-      });
+      this.socket.addEventListener('close', () => this.onClose());
 
       this.socket.addEventListener('error', (event) => {
         console.log('error =', event);
       });
 
-      this.socket.addEventListener('message', (event) => {
-        this.onMessage(event);
-      });
+      this.socket.addEventListener('message', (event) => this.onMessage(event));
     }
   }
 
@@ -174,22 +165,27 @@ class WebS {
     if (!this.socket || this.socket?.CLOSED) this.socket?.close(code, reason);
   }
 
-  public async login(userName: string, password: string): Promise<LoginResult | undefined> {
-    if (!this.isReady) return { result: false, message: 'Not connected' };
-
-    const request = createLoginRequest(userName, password);
-    const response = await this.sendLoginRequest(request);
-
-    if (isUserLoginResponse(response) && response.payload.user.isLogined)
-      return { result: true, message: 'Login successful' };
-
-    if (isUserLoginedResponse(response)) {
-      console.log(response.payload.error);
-
-      return { result: false, message: response.payload.error };
+  public async login(userName: string, password: string): Promise<LoginResult> {
+    if (!this.isReady) {
+      return { result: false, message: 'Not connected' };
     }
-    if (!isUserLoginResponse(response))
-      return { result: false, message: response.message || 'Invalid credentials' };
+
+    try {
+      const request = createLoginRequest(userName, password);
+      const response = await this.sendLoginRequest(request);
+
+      if (isUserLoginResponse(response) && response.payload.user.isLogined) {
+        return { result: true, message: 'Login successful' };
+      }
+
+      if (isUserLoginErrorResponse(response)) {
+        return { result: false, message: response.payload.error };
+      }
+
+      return { result: false, message: 'Invalid credentials' };
+    } catch {
+      return { result: false, message: 'Login request failed' };
+    }
   }
 
   public logOut(user: LoginUser): void {
@@ -265,7 +261,7 @@ class WebS {
     this.socket.send(JSON.stringify(request));
   }
 
-  private sendLoginRequest(request: UserLogin): Promise<UserLogin | LoginResult | UserLogined> {
+  private sendLoginRequest(request: UserLogin): Promise<UserLogin | UserLoginError> {
     return new Promise((resolve, reject) => {
       const cleanup = (): void => this.socket?.removeEventListener('message', handler);
 
@@ -278,7 +274,7 @@ class WebS {
             resolve(response);
           }
 
-          if (isUserLoginedResponse(response) && response.id === request.id) {
+          if (isUserLoginErrorResponse(response) && response.id === request.id) {
             cleanup();
             resolve(response);
           }
@@ -345,11 +341,8 @@ class WebS {
   }
 
   private onMessage(event: MessageEvent): void {
-    // console.log('message =', event);
-
     try {
       const response: unknown = JSON.parse(event.data);
-      // console.log('response =', response);
 
       if (isUserLoginResponse(response)) {
         const { payload } = response;
@@ -357,40 +350,27 @@ class WebS {
         if (this.logined) {
           chat.setUserName = payload.user.login;
         }
-        // console.log(this.logined);
       }
-
-      // console.log('isActiveUserResponse =', isActiveUserResponse(response));
 
       if (isActiveUserResponse(response)) {
         const { id, payload } = response;
         if (this.pendingRequests.has(id)) {
           this.pendingRequests.delete(id);
-          // chat.userListCreate(payload.users);
           chat.setActiveUsers = payload.users;
         }
       }
-
-      // console.log('isInActiveUserResponse =', isInActiveUserResponse(response));
 
       if (isInActiveUserResponse(response)) {
         const { id, payload } = response;
         if (this.pendingRequests.has(id)) {
           this.pendingRequests.delete(id);
-          // chat.userListCreate(payload.users);
           chat.setInActiveUsers = payload.users;
         }
       }
 
-      // console.log('isThirdPartyUserAuthentication =', isThirdPartyUserAuthentication(response));
-
       ThirdPartyUserAuthentication(response);
 
-      // console.log('isThirdPartyUserLogout =', isThirdPartyUserLogout(response));
-
       ThirdPartyUserLogout(response);
-
-      // console.log('isMessageFromUser =', isMessageFromUser(response));
 
       MessageFromUser(response);
     } catch (error) {
@@ -416,7 +396,7 @@ function isUserLoginResponse(data: unknown): data is UserLogin {
   );
 }
 
-function isUserLoginedResponse(data: unknown): data is UserLogined {
+function isUserLoginErrorResponse(data: unknown): data is UserLoginError {
   if (typeof data !== 'object' || data === null) return false;
   if (!('id' in data) || !('type' in data) || !('payload' in data)) return false;
   if (typeof data.id !== 'string' || data.type !== 'ERROR') return false;
@@ -583,18 +563,14 @@ function ThirdPartyUserLogout(response: unknown): void {
 function MessageFromUser(response: unknown): void {
   if (isMessageFromUser(response)) {
     const { payload } = response;
-    // console.log(response);
-    // console.log(payload.message);
     if (payload.message.to === chat.getUserName) {
       const message: Message = {
         message: payload.message.text,
         inOut: 'in',
         status: payload.message.status,
       };
-      // console.log('addNewMessage init');
 
       chatMessages.addNewMessage(payload.message.from, message.message, 'in');
-      // console.log('addNewMessage finis');
 
       chat.chatMessageUpdate();
     }

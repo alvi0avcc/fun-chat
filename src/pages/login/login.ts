@@ -2,6 +2,7 @@ import './login.css';
 import gear from '../../assets/gear.svg';
 
 import * as html from '../../builder/elements';
+import type { LoginResult } from '../../websockets/websocket';
 import { wSocket } from '../../websockets/websocket';
 import { dlgServerSelect } from '../../websockets/server-select';
 
@@ -35,16 +36,7 @@ export class Login {
           const login: string = this.user.login;
           const pwd: string = this.user.pwd;
 
-          wSocket.login(login, pwd).then((response) => {
-            if (response?.result) {
-              globalThis.location.href = '#/chat';
-              this.setSessionStorageLogin();
-            }
-            if (response?.message === 'incorrect password') {
-              console.log('incorrect password');
-              messageWrongPassword(response?.message);
-            }
-          });
+          this.socketLogin(login, pwd);
         }
       },
     });
@@ -87,11 +79,17 @@ export class Login {
     try {
       sessionStorage.removeItem(storageKey);
       this.user = { login: '', pwd: '' };
+      this.clearLoginInput();
 
       globalThis.location.href = '#/';
     } catch (error) {
       console.error('Error saving to sessionStorage:', error);
     }
+  }
+
+  private clearLoginInput(): void {
+    this.nameInput.value = '';
+    this.pwdInput.value = '';
   }
 
   private initBtnNamePwd(): void {
@@ -103,7 +101,6 @@ export class Login {
       attributes: { minlength: `${minLength}`, maxlength: `${maxLength}`, require: '' },
       eventType: 'input',
       callback: (event) => {
-        console.log(event);
         this.user.login = inputValue(event, minLength, maxLength, 'login') || '';
         this.loginBtn.disabled = this.user.login && this.user.pwd ? false : true;
       },
@@ -121,7 +118,6 @@ export class Login {
       attributes: { minlength: `${minLength}`, maxlength: `${maxLength}`, require: '' },
       eventType: 'input',
       callback: (event) => {
-        console.log(event);
         this.user.pwd = inputValue(event, minLength, maxLength, 'pwd') || '';
         this.loginBtn.disabled = this.user.login && this.user.pwd ? false : true;
       },
@@ -211,21 +207,24 @@ export class Login {
           this.user.login = parsedData.login;
           this.user.pwd = parsedData.pwd;
 
-          wSocket.login(this.user.login, this.user.pwd).then((response) => {
-            if (response?.result) {
-              globalThis.location.href = '#/chat';
-              this.setSessionStorageLogin();
-            }
-            if (response?.message === 'incorrect password') {
-              console.log('incorrect password');
-              messageWrongPassword(response?.message);
-            }
-          });
+          this.socketLogin(this.user.login, this.user.pwd);
         }
       }
     } catch (error) {
       console.error('Error saving to sessionStorage:', error);
     }
+  }
+  private socketLogin(login: string, pwd: string): void {
+    wSocket.login(login, pwd).then((response: LoginResult) => {
+      if (response) {
+        if (response.result) {
+          globalThis.location.href = '#/chat';
+          this.setSessionStorageLogin();
+        } else {
+          messageWrongPassword(response.message);
+        }
+      }
+    });
   }
 }
 
