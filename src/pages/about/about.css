@@ -1,0 +1,31 @@
+.article-about {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+
+  width: 70%;
+  min-width: 180px;
+  max-width: 450px;
+  padding: 10px;
+  border: 1px solid #fff;
+  border-radius: 10px;
+}
+
+.about-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.about-title .label {
+  font-size: 1.5rem;
+  color: #f00;
+}
+
+.about-title .img {
+  width: fit-content;
+}
+
+.article-about .p {
+  margin: 10px;
+}

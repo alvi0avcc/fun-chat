@@ -1,0 +1,71 @@
+:root {
+  --background-color: #000;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  overflow: hidden;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+  padding: 5px;
+
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+
+  background-color: var(--background-color);
+}
+
+.main {
+  display: flex;
+  height: 100%;
+}
+
+.h1 {
+  color: #fff;
+}
+
+.button {
+  cursor: pointer;
+
+  height: 1.5rem;
+  padding: 2px 5px;
+  border: 1px solid;
+  border-radius: 4px;
+
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: #000;
+  text-align: center;
+  text-decoration: none;
+
+  background-color: #d3d3d3;
+}
+
+.button:disabled {
+  cursor: default;
+  color: grey !important;
+}
+
+.input {
+  height: 1.5rem;
+  border-radius: 4px;
+  background-color: #d3d3d3;
+}
+
+.dialog::backdrop {
+  opacity: 0.95;
+  background-color: darkslategrey;
+}

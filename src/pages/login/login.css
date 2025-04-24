@@ -1,0 +1,61 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+
+  padding: 5px;
+  border: solid 1px white;
+  border-radius: 5px;
+}
+
+.current-server-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fieldset {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  width: 400px;
+  border-radius: 5px;
+}
+
+.form-btn {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 100px;
+}
+
+input:invalid {
+  background-color: red;
+}
+
+.dialog-wrong-pwd {
+  display: flex;
+  flex-direction: column;
+  place-self: center center;
+  align-items: center;
+
+  border-radius: 10px;
+}
+
+.dialog-wrong-pwd .button {
+  width: fit-content;
+  margin-top: 10px;
+}
+
+.settings {
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.settings .img {
+  height: 100%;
+}
+
+.settings:hover {
+  cursor: pointer;
+  background-color: lime;
+}

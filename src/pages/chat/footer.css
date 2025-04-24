@@ -1,0 +1,39 @@
+.footer-school-logo {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.footer-school-logo::before {
+  content: '';
+
+  display: inline-block;
+
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+
+  background-color: #fff;
+  background-image: url('https://rs.school/_next/static/media/rss-logo.c19ce1b4.svg');
+  background-size: contain;
+}
+
+.footer-my-logo {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.footer-my-logo::before {
+  content: '';
+
+  display: inline-block;
+
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+
+  background-color: #fff;
+  background-image: url('https://avcc.sytes.net/img/logo/logo.svg');
+  background-size: contain;
+}
