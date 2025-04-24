@@ -84,6 +84,11 @@
   color: green;
 }
 
+.option:hover {
+  cursor: pointer;
+  background-color: #90ee90;
+}
+
 .option-active::before {
   content: '• ';
 }

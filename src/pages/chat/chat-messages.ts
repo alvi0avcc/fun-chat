@@ -1,5 +1,3 @@
-// import type { UserMessage } from '../../websockets/websocket';
-
 export interface Message {
   message: string;
   inOut: 'in' | 'out';
@@ -27,16 +25,10 @@ class ChatMessages {
   }
 
   public getUserMessage(userName: string): Message[] | undefined {
-    console.log('getUserMessage');
-    console.log(userName);
-    console.log(this.messages);
-
     return this.messages.find((user: UserMessages) => user.userName === userName)?.messages;
   }
 
   public addNewMessage(userName: string, newMessage: string, direction: 'in' | 'out'): void {
-    console.log('addNewMessage =', userName, newMessage);
-
     const message: Message = {
       message: newMessage,
       inOut: direction,
@@ -50,7 +42,6 @@ class ChatMessages {
     const index: number = this.messages.findIndex(
       (user: UserMessages) => user.userName === userName
     );
-    console.log('index =', index);
 
     if (index === -1) {
       const user: UserMessages = {
@@ -67,10 +58,8 @@ class ChatMessages {
           },
         ],
       };
-      console.log('this.messages.push(user) - init');
 
       this.messages.push(user);
-      console.log('this.messages.push(user) - finish');
     } else {
       this.messages[index].messages.push(message);
     }

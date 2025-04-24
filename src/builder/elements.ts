@@ -441,20 +441,6 @@ export const use = ({
   return element;
 };
 
-// export const ul = (
-//   tag = 'ul',
-//   id = '',
-//   text = '',
-//   callback: EventListener | undefined = undefined
-// ): HTMLElement => {
-//   const ul: HTMLElement = document.createElement('ul');
-//   ul.id = id;
-//   ul.textContent = text;
-//   ul.classList.add(tag);
-//   if (callback) ul.addEventListener('click', callback);
-//   return ul;
-// };
-
 export const ul = ({
   id = undefined,
   children = undefined,

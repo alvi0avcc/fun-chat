@@ -11,7 +11,6 @@ import { chatMessages } from './chat-messages';
 import type { Message } from './chat-messages';
 import type { User } from '../../websockets/websocket';
 import { login } from '../login/login';
-// import type { User as LoginUser } from '../login/login';
 
 export class Chat {
   private main: HTMLElement;
@@ -30,13 +29,14 @@ export class Chat {
   constructor() {
     this.usersList = html.select({ id: 'users-list', styles: ['select', 'users-list'] });
     this.usersList.addEventListener('click', (event: Event) => {
-      console.log(event);
-      if (event.target && 'value' in event.target) {
-        console.log('value =', event.target.value);
-        if (event.target.value && typeof event.target.value === 'string') {
-          this.userForMessage = event.target.value;
-          this.chatMessageReadWrite();
-        }
+      if (
+        event.target &&
+        'value' in event.target &&
+        event.target.value &&
+        typeof event.target.value === 'string'
+      ) {
+        this.userForMessage = event.target.value;
+        this.chatMessageReadWrite();
       }
     });
     this.titleUserName = html.label({
@@ -99,7 +99,6 @@ export class Chat {
   }
 
   public userListCreate(users: User[]): void {
-    // const options: HTMLOptionElement[] = users.map((user) => new Option(user.login, user.login));
     const options: HTMLOptionElement[] = users.map((user) =>
       html.option({
         text: user.login,
@@ -113,16 +112,10 @@ export class Chat {
   }
 
   public chatMessageUpdate(): void {
-    console.log('chatMessageUpdate');
-    console.log('this.userName =', this.userName);
-    console.log('this.userForMessage =', this.userForMessage);
-
     if (this.userName) {
       const userMessages: Message[] | undefined = chatMessages.getUserMessage(this.userForMessage);
-      console.log('userMessages =', userMessages);
 
       if (userMessages) {
-        console.log('chatMessageUpdate =', userMessages);
         this.chatMessage.replaceChildren();
         for (const message of userMessages) {
           this.chatMessage.append(html.section({ text: message.message }));
@@ -163,14 +156,11 @@ export class Chat {
             html.textArea({
               placeholder: 'write message...',
               callback: (event) => {
-                console.log('write message... =', event);
-
                 if (
                   event.target &&
                   'value' in event.target &&
                   typeof event.target.value === 'string'
                 ) {
-                  console.log('write message... =', event.target.value);
                   message = event.target.value;
                 }
               },
@@ -195,20 +185,14 @@ export class Chat {
   }
 
   private chatMessageReadWrite(): void {
-    console.log('chatMessageReadWrite');
-
     if (this.userName && chatMessages) {
       const messages: Message[] | undefined = chatMessages.getUserMessage(this.userName);
       this.chatMessage.replaceChildren();
       if (messages) {
-        console.log('messages');
-
         for (const element of messages) {
           this.chatMessage.append(html.section({ text: element.message }));
         }
       } else {
-        console.log('start start messaging');
-
         this.chatMessage.append(html.section({ text: 'Start messaging' }));
       }
     }

@@ -45,21 +45,16 @@ export interface User {
   isLogined: boolean;
 }
 
-interface requestActiveUsers {
+type UserState = 'USER_ACTIVE' | 'USER_INACTIVE';
+interface UsersListRequest {
   id: string;
-  type: 'USER_ACTIVE';
+  type: UserState;
   payload: typeof SERVER_NULL;
 }
 
-interface requestInActiveUsers {
+interface UsersListResponse {
   id: string;
-  type: 'USER_INACTIVE';
-  payload: typeof SERVER_NULL;
-}
-
-interface responseActiveUsers {
-  id: string;
-  type: 'USER_ACTIVE';
+  type: UserState;
   payload: {
     users: User[];
   };
@@ -210,7 +205,6 @@ class WebS {
   public sendMessage(userName: string, message: string): void {
     if (userName && message && this.socket && this.isLogined) {
       const idRequest = getSafeUUID();
-      // this.pendingRequests.add(idRequest);
       const request = {
         id: idRequest,
         type: 'MSG_SEND',
@@ -232,7 +226,7 @@ class WebS {
 
     const requestId = `req_${Date.now()}_${getSafeUUID()}`;
 
-    const request: requestActiveUsers = {
+    const request: UsersListRequest = {
       id: requestId,
       type: 'USER_ACTIVE',
       payload: SERVER_NULL,
@@ -250,7 +244,7 @@ class WebS {
 
     const requestId = `req_${Date.now()}_${getSafeUUID()}`;
 
-    const request: requestInActiveUsers = {
+    const request: UsersListRequest = {
       id: requestId,
       type: 'USER_INACTIVE',
       payload: SERVER_NULL,
@@ -352,7 +346,7 @@ class WebS {
         }
       }
 
-      if (isActiveUserResponse(response)) {
+      if (isListUserResponse(response, 'active')) {
         const { id, payload } = response;
         if (this.pendingRequests.has(id)) {
           this.pendingRequests.delete(id);
@@ -360,7 +354,7 @@ class WebS {
         }
       }
 
-      if (isInActiveUserResponse(response)) {
+      if (isListUserResponse(response, 'inactive')) {
         const { id, payload } = response;
         if (this.pendingRequests.has(id)) {
           this.pendingRequests.delete(id);
@@ -369,7 +363,6 @@ class WebS {
       }
 
       ThirdPartyUserAuthentication(response);
-
       ThirdPartyUserLogout(response);
 
       MessageFromUser(response);
@@ -413,20 +406,12 @@ function createLoginRequest(userName: string, password: string): UserLogin {
   };
 }
 
-function isActiveUserResponse(data: unknown): data is responseActiveUsers {
+function isListUserResponse(data: unknown, type: 'active' | 'inactive'): data is UsersListResponse {
   if (typeof data !== 'object' || data === null) return false;
   if (!('id' in data) || !('type' in data) || !('payload' in data)) return false;
-  if (typeof data.id !== 'string' || data.type !== 'USER_ACTIVE') return false;
-  if (typeof data.payload !== 'object' || data.payload === null) return false;
-  if (!('users' in data.payload) || !Array.isArray(data.payload.users)) return false;
-
-  return true;
-}
-
-function isInActiveUserResponse(data: unknown): data is responseActiveUsers {
-  if (typeof data !== 'object' || data === null) return false;
-  if (!('id' in data) || !('type' in data) || !('payload' in data)) return false;
-  if (typeof data.id !== 'string' || data.type !== 'USER_INACTIVE') return false;
+  if (typeof data.id !== 'string') return false;
+  if (type === 'active' && data.type !== 'USER_ACTIVE') return false;
+  if (type === 'inactive' && data.type !== 'USER_INACTIVE') return false;
   if (typeof data.payload !== 'object' || data.payload === null) return false;
   if (!('users' in data.payload) || !Array.isArray(data.payload.users)) return false;
 

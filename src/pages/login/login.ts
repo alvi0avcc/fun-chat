@@ -71,7 +71,6 @@ export class Login {
         styles: ['main'],
         children: [this.loginForm()],
       });
-      // wSocket.create();
     }
   }
 
